@@ -379,6 +379,7 @@ select option{background:var(--surface);}
         <button class="btn btng" style="font-size:10px;padding:4px 11px" onclick="pSel('priv')">Private Only</button>
         <button class="btn btng" style="font-size:10px;padding:4px 11px" onclick="pSel('torrent')">Torrents Only</button>
         <button class="btn btng" style="font-size:10px;padding:4px 11px" onclick="pSel('usenet')">Usenet Only</button>
+        <button class="btn btng" style="font-size:10px;padding:4px 11px" onclick="pSel('priv-pub-usenet')">Private + Public Usenet</button>
       </div>
       <div class="idx-grid" id="p-idxgrid"></div>
     </div>
@@ -502,51 +503,42 @@ select option{background:var(--surface);}
 // PROWLARR INDEXER DATA
 // ─────────────────────────────────────
 const INDEXERS=[
+  // Public Torrent
   {name:"The Pirate Bay",def:"thepiratebay",type:"torrent",priv:"public",cat:"General"},
-  {name:"1337x",def:"1337x",type:"torrent",priv:"public",cat:"General"},
   {name:"YTS",def:"yts",type:"torrent",priv:"public",cat:"Movies"},
-  {name:"EZTV",def:"eztv",type:"torrent",priv:"public",cat:"TV"},
   {name:"Nyaa.si",def:"nyaasi",type:"torrent",priv:"public",cat:"Anime"},
-  {name:"AniDex",def:"anidex",type:"torrent",priv:"public",cat:"Anime"},
   {name:"LimeTorrents",def:"limetorrents",type:"torrent",priv:"public",cat:"General"},
-  {name:"TorrentGalaxy",def:"torrentgalaxy",type:"torrent",priv:"public",cat:"General"},
-  {name:"Kickass Torrents",def:"kickasstorrents-ws",type:"torrent",priv:"public",cat:"General"},
-  {name:"TorLock",def:"torlock",type:"torrent",priv:"public",cat:"General"},
-  {name:"BT4G",def:"bt4g",type:"torrent",priv:"public",cat:"General"},
-  {name:"MagnetDL",def:"magnetdl",type:"torrent",priv:"public",cat:"General"},
-  {name:"SolidTorrents",def:"solidtorrents",type:"torrent",priv:"public",cat:"General"},
-  {name:"TorrentFunk",def:"torrentfunk",type:"torrent",priv:"public",cat:"General"},
-  {name:"Zooqle",def:"zooqle",type:"torrent",priv:"public",cat:"General"},
   {name:"Torrent9",def:"torrent9",type:"torrent",priv:"public",cat:"General"},
-  {name:"IPTorrents",def:"iptorrents",type:"torrent",priv:"private",cat:"General",ck:true},
-  {name:"TorrentLeech",def:"torrentleech",type:"torrent",priv:"private",cat:"General",ck:true},
-  {name:"HDBits",def:"hdbits",type:"torrent",priv:"private",cat:"Movies/TV",ck:true},
-  {name:"PassThePopcorn",def:"passthepopcorn",type:"torrent",priv:"private",cat:"Movies",ck:true},
-  {name:"BroadcasTheNet (BTN)",def:"broadcasthenet",type:"torrent",priv:"private",cat:"TV",ck:true},
-  {name:"MoreThanTV (MTV)",def:"morethantv",type:"torrent",priv:"private",cat:"TV",ck:true},
-  {name:"BeyondHD",def:"beyondhd",type:"torrent",priv:"private",cat:"Movies/TV",ck:true},
-  {name:"Blutopia",def:"blutopia",type:"torrent",priv:"private",cat:"Movies/TV",ck:true},
-  {name:"AvistaZ",def:"avistaz",type:"torrent",priv:"private",cat:"Movies/TV",ck:true},
-  {name:"CinemaZ",def:"cinemaz",type:"torrent",priv:"private",cat:"Movies",ck:true},
-  {name:"HD-Space",def:"hdspace",type:"torrent",priv:"private",cat:"Movies/TV",ck:true},
-  {name:"HD-Torrents",def:"hdtorrents",type:"torrent",priv:"private",cat:"Movies/TV",ck:true},
-  {name:"FileList",def:"filelist",type:"torrent",priv:"private",cat:"General",ck:true},
-  {name:"TorrentDay",def:"torrentday",type:"torrent",priv:"private",cat:"General",ck:true},
-  {name:"AlphaRatio",def:"alpharatio",type:"torrent",priv:"private",cat:"General",ck:true},
-  {name:"AnimeBytes",def:"animebytes",type:"torrent",priv:"private",cat:"Anime",ck:true},
-  {name:"Redacted (Music)",def:"redacted",type:"torrent",priv:"private",cat:"Music",ck:true},
-  {name:"Orpheus (Music)",def:"orpheus",type:"torrent",priv:"private",cat:"Music",ck:true},
-  {name:"SceneTime",def:"scenetime",type:"torrent",priv:"private",cat:"General",ck:true},
-  {name:"Nebulance",def:"nebulance",type:"torrent",priv:"private",cat:"TV",ck:true},
-  {name:"NZBGeek",def:"nzbgeek",type:"usenet",priv:"private",cat:"General"},
-  {name:"DogNZB",def:"dognzb",type:"usenet",priv:"private",cat:"General"},
-  {name:"NZBFinder",def:"nzbfinder",type:"usenet",priv:"private",cat:"General"},
-  {name:"NZBPlanet",def:"nzbplanet",type:"usenet",priv:"private",cat:"General"},
-  {name:"Althub",def:"althub",type:"usenet",priv:"private",cat:"General"},
-  {name:"NZBIndex",def:"nzbindex",type:"usenet",priv:"public",cat:"General"},
-  {name:"Binsearch",def:"binsearch",type:"usenet",priv:"public",cat:"General"},
-  {name:"NZBKing",def:"nzbking",type:"usenet",priv:"public",cat:"General"},
-  {name:"Usenet Crawler",def:"usenetcrawler",type:"usenet",priv:"private",cat:"General"},
+  // Private Torrent - cookie auth
+  {name:"IPTorrents",def:"iptorrents",type:"torrent",priv:"private",cat:"General",ck:true,authType:"cookie"},
+  {name:"TorrentLeech",def:"torrentleech",type:"torrent",priv:"private",cat:"General",ck:true,authType:"cookie"},
+  {name:"HDBits",def:"hdbits",type:"torrent",priv:"private",cat:"Movies/TV",ck:true,authType:"cookie"},
+  {name:"AvistaZ",def:"avistaz",type:"torrent",priv:"private",cat:"Movies/TV",ck:true,authType:"cookie"},
+  {name:"CinemaZ",def:"cinemaz",type:"torrent",priv:"private",cat:"Movies",ck:true,authType:"cookie"},
+  {name:"HD-Space",def:"hdspace",type:"torrent",priv:"private",cat:"Movies/TV",ck:true,authType:"cookie"},
+  {name:"HD-Torrents",def:"hdtorrents",type:"torrent",priv:"private",cat:"Movies/TV",ck:true,authType:"cookie"},
+  {name:"AlphaRatio",def:"alpharatio",type:"torrent",priv:"private",cat:"General",ck:true,authType:"cookie"},
+  {name:"AnimeBytes",def:"animebytes",type:"torrent",priv:"private",cat:"Anime",ck:true,authType:"cookie"},
+  {name:"TorrentDay",def:"torrentday",type:"torrent",priv:"private",cat:"General",ck:true,authType:"cookie"},
+  {name:"SceneTime",def:"scenetime",type:"torrent",priv:"private",cat:"General",ck:true,authType:"cookie"},
+  {name:"FileList",def:"filelist",type:"torrent",priv:"private",cat:"General",ck:true,authType:"cookie"},
+  {name:"Blutopia",def:"blutopia",type:"torrent",priv:"private",cat:"Movies/TV",ck:true,authType:"cookie"},
+  {name:"Nebulance",def:"nebulance",type:"torrent",priv:"private",cat:"TV",ck:true,authType:"apikey",apiKeyField:"apikey"},
+  // Private Torrent - API key auth
+  {name:"PassThePopcorn",def:"passthepopcorn",type:"torrent",priv:"private",cat:"Movies",ck:true,authType:"apikey",apiUserField:"APIUser",apiKeyField:"APIKey"},
+  {name:"BroadcasTheNet (BTN)",def:"broadcasthenet",type:"torrent",priv:"private",cat:"TV",ck:true,authType:"apikey",apiKeyField:"ApiKey"},
+  {name:"MoreThanTV (MTV)",def:"morethantv",type:"torrent",priv:"private",cat:"TV",ck:true,authType:"apikey",apiKeyField:"ApiKey"},
+  {name:"BeyondHD",def:"beyondhd",type:"torrent",priv:"private",cat:"Movies/TV",ck:true,authType:"apikey",apiKeyField:"ApiKey",rssKeyField:"RssKey"},
+  {name:"Redacted (Music)",def:"redacted",type:"torrent",priv:"private",cat:"Music",ck:true,authType:"apikey",apiKeyField:"Apikey"},
+  {name:"Orpheus (Music)",def:"orpheus",type:"torrent",priv:"private",cat:"Music",ck:true,authType:"apikey",apiKeyField:"Apikey"},
+  {name:"TorrentLeech (API)",def:"torrentleech",type:"torrent",priv:"private",cat:"General",ck:true,authType:"userpass"},
+  // Usenet - need redirect:true
+  {name:"NZBGeek",def:"nzbgeek",type:"usenet",priv:"private",cat:"General",redirect:true},
+  {name:"DogNZB",def:"dognzb",type:"usenet",priv:"private",cat:"General",redirect:true},
+  {name:"NZBFinder",def:"nzbfinder",type:"usenet",priv:"private",cat:"General",redirect:true},
+  {name:"NZBPlanet",def:"nzbplanet",type:"usenet",priv:"private",cat:"General",redirect:true},
+  {name:"Althub",def:"althub",type:"usenet",priv:"private",cat:"General",redirect:true},
+  {name:"Usenet Crawler",def:"usenetcrawler",type:"usenet",priv:"private",cat:"General",redirect:true},
 ];
 
 // ─────────────────────────────────────
@@ -617,7 +609,7 @@ function downloadTemplate(p){
 const S={
   r:{items:[],filter:'All',qualityId:null,rootFolder:null,importing:false,headers:[],rawRows:[]},
   s:{items:[],filter:'All',qualityId:null,rootFolder:null,importing:false,headers:[],rawRows:[]},
-  p:{items:[],importing:false,headers:[],rawRows:[],src:'b'},
+  p:{items:[],importing:false,headers:[],rawRows:[],src:'b',appProfileId:1},
   l:{items:[],filter:'All',qualityId:null,rootFolder:null,metaId:null,importing:false,headers:[],rawRows:[]},
 };
 const cookieStore={};
@@ -676,7 +668,21 @@ function renderPGrid(){
 }
 
 function toggleP(id){if(S.p.importing)return;const m=S.p.items.find(x=>x.id===id);if(m){m.selected=!m.selected;renderPGrid();}}
-function pSel(t){S.p.items.forEach(m=>{if(t==='all')m.selected=true;else if(t==='none')m.selected=false;else if(t==='pub')m.selected=m.priv==='public';else if(t==='priv')m.selected=m.priv==='private';else if(t==='torrent')m.selected=m.type==='torrent';else if(t==='usenet')m.selected=m.type==='usenet';});renderPGrid();}
+
+
+// Keep old pSel for any legacy calls
+function pSel(t){
+  S.p.items.forEach(m=>{
+    if(t==='all')m.selected=true;
+    else if(t==='none')m.selected=false;
+    else if(t==='pub')m.selected=m.priv==='public';
+    else if(t==='priv')m.selected=m.priv==='private';
+    else if(t==='torrent')m.selected=m.type==='torrent';
+    else if(t==='usenet')m.selected=m.type==='usenet';
+    else if(t==='priv-pub-usenet')m.selected=(m.priv==='private')||(m.type==='usenet'&&m.priv==='public');
+  });
+  renderPGrid();
+}
 
 // ─────────────────────────────────────
 // COOKIE MANAGER
@@ -696,6 +702,14 @@ function initCookieManager(){
         <div class="ck-card-def">${t.def}</div>
       </div>
       <div class="ck-body">
+        ${t.authType==='apikey'?`
+        <div class="ck-field">
+          <label>API Key</label>
+          <input type="text" id="ck-apikey-${t.def}" placeholder="Your API key for ${t.name}…"/>
+        </div>
+        ${t.apiUserField?`<div class="ck-field"><label>API Username</label><input type="text" id="ck-apiuser-${t.def}" placeholder="Your API username…"/></div>`:''}
+        ${t.rssKeyField?`<div class="ck-field"><label>RSS Key</label><input type="text" id="ck-rsskey-${t.def}" placeholder="Your RSS key…"/></div>`:''}
+        `:`
         <div class="ck-field">
           <label>Session Cookie</label>
           <textarea id="ck-c-${t.def}" rows="3" placeholder="Paste full cookie string here…"></textarea>
@@ -705,6 +719,7 @@ function initCookieManager(){
           <label>User-Agent</label>
           <input type="text" id="ck-ua-${t.def}" placeholder="Mozilla/5.0 (Windows NT 10.0; Win64; x64)…"/>
         </div>
+        `}
         <div class="ck-actions">
           <button class="btn btn-push-p" style="font-size:10px;padding:5px 13px" onclick="saveCookie('${t.def}','${t.name}')">Save & Push to Prowlarr</button>
           <button class="btn btng" style="font-size:10px;padding:5px 11px" onclick="clearCookie('${t.def}')">Clear</button>
@@ -712,8 +727,9 @@ function initCookieManager(){
         </div>
       </div>
     </div>`).join('');
-  // Attach auto-strip listeners
+  // Attach auto-strip listeners (only for cookie auth cards)
   privs.forEach(t=>{
+    if(t.authType==='apikey')return; // no stripping needed for API key fields
     const ta=document.getElementById(`ck-c-${t.def}`);
     if(!ta)return;
     const strip=()=>{
@@ -740,10 +756,24 @@ function jumpCk(def){
 }
 
 async function saveCookie(def,name){
-  const cookie=document.getElementById(`ck-c-${def}`).value.trim();
-  const ua=document.getElementById(`ck-ua-${def}`).value.trim();
-  if(!cookie){alert('Paste the cookie value first.');return;}
-  cookieStore[def]={cookie,userAgent:ua};
+  // Support both cookie auth and API key auth
+  const cookieEl=document.getElementById(`ck-c-${def}`);
+  const apiKeyEl=document.getElementById(`ck-apikey-${def}`);
+  const apiUserEl=document.getElementById(`ck-apiuser-${def}`);
+  const rssKeyEl=document.getElementById(`ck-rsskey-${def}`);
+  const ua=document.getElementById(`ck-ua-${def}`)?.value.trim()||'';
+
+  if(apiKeyEl){
+    const apiKey=apiKeyEl.value.trim();
+    if(!apiKey){alert('Enter the API key first.');return;}
+    const apiUser=apiUserEl?.value.trim()||'';
+    const rssKey=rssKeyEl?.value.trim()||'';
+    cookieStore[def]={apiKey,apiUser,rssKey,userAgent:ua,authType:'apikey'};
+  } else {
+    const cookie=cookieEl?.value.trim()||'';
+    if(!cookie){alert('Paste the cookie value first.');return;}
+    cookieStore[def]={cookie,userAgent:ua,authType:'cookie'};
+  }
   document.getElementById(`ck-${def}`).classList.add('saved');
   const url=document.getElementById('p-url').value.trim().replace(/\/$/,'');
   const key=document.getElementById('p-key').value.trim();
@@ -769,8 +799,16 @@ async function saveCookie(def,name){
 }
 
 function clearCookie(def){
-  document.getElementById(`ck-c-${def}`).value='';
-  document.getElementById(`ck-ua-${def}`).value='';
+  const cookieEl=document.getElementById(`ck-c-${def}`);
+  const apiKeyEl=document.getElementById(`ck-apikey-${def}`);
+  const uaEl=document.getElementById(`ck-ua-${def}`);
+  if(cookieEl)cookieEl.value='';
+  if(apiKeyEl)apiKeyEl.value='';
+  if(uaEl)uaEl.value='';
+  const apiUserEl=document.getElementById(`ck-apiuser-${def}`);
+  const rssKeyEl=document.getElementById(`ck-rsskey-${def}`);
+  if(apiUserEl)apiUserEl.value='';
+  if(rssKeyEl)rssKeyEl.value='';
   delete cookieStore[def];
   document.getElementById(`ck-${def}`).classList.remove('saved');
 }
@@ -1093,7 +1131,13 @@ async function testConn(p){
       }
       setStatus(p,'ok',`Connected to ${d.appName||''} v${d.version} · ${qd.length} quality profile${qd.length!==1?'s':''} · ${rd.length} root folder${rd.length!==1?'s':''}`);
     }else{
-      setStatus(p,'ok',`Connected to Prowlarr v${d.version}`);
+      // Prowlarr: fetch app profile ID (required for adding indexers)
+      try{
+        const apr=await fetch(`${url}/api/v1/appprofile`,{headers:{'X-Api-Key':key}});
+        if(apr.ok){const apd=await apr.json();S.p.appProfileId=apd[0]?.id||1;addLog('p',`App profile: "${apd[0]?.name}" (id:${S.p.appProfileId})`,'ok');}
+        else{S.p.appProfileId=1;}
+      }catch(e){S.p.appProfileId=1;}
+      setStatus(p,'ok',`Connected to Prowlarr v${d.version} · App Profile ID: ${S.p.appProfileId}`);
     }
     document.getElementById(`${p}-btn`).disabled=false;
   }catch(e){setStatus(p,'err',`Connection failed: ${e.message}`);}
@@ -1200,29 +1244,172 @@ async function importP(){
   document.getElementById('p-btn').disabled=true;
   document.getElementById('p-prog').classList.add('on');
   document.getElementById('p-log').classList.add('on');
+
+  // Step 1: Fetch all available indexer schemas from Prowlarr
+  // This gives us the exact definitionNames Prowlarr supports
+  addLog('p','🔍 Fetching available indexer definitions from Prowlarr…');
+  let schemas={};
+  try{
+    const sr=await fetch(`${url}/api/v1/indexer/schema`,{headers:{'X-Api-Key':key}});
+    if(sr.ok){
+      const sd=await sr.json();
+      // Build a lookup map: lowercase name -> {definitionName, implementation, configContract, fields}
+      sd.forEach(s=>{
+        schemas[s.definitionName?.toLowerCase()]=s;
+        // Also index by name for fuzzy matching
+        if(s.name)schemas[s.name.toLowerCase()]=s;
+      });
+      addLog('p',`✓ Found ${sd.length} indexer definitions available`,'ok');
+    }else{
+      addLog('p','⚠ Could not fetch schemas — will try direct add','wn');
+    }
+  }catch(e){
+    addLog('p',`⚠ Schema fetch failed: ${e.message} — will try direct add`,'wn');
+  }
+
+  // Step 2: Also get already-added indexers to detect duplicates
+  let existing=[];
+  try{
+    const er=await fetch(`${url}/api/v1/indexer`,{headers:{'X-Api-Key':key}});
+    if(er.ok)existing=await er.json();
+  }catch(e){}
+  const existingNames=new Set(existing.map(i=>i.name?.toLowerCase()));
+  const existingDefs=new Set(existing.map(i=>i.definitionName?.toLowerCase()));
+
   let done=0;
+  const appProfId=S.p.appProfileId||1;
+
   for(const m of toImport){
     m.status='importing';renderPGrid();
     try{
-      const def=m.def||m.title.toLowerCase().replace(/[^a-z0-9]/g,'');
-      const ck=cookieStore[def];
-      const fields=[{name:'definitionFile',value:def}];
-      if(ck?.cookie)fields.push({name:'cookie',value:ck.cookie});
-      if(ck?.userAgent)fields.push({name:'useragent',value:ck.userAgent});
-      const body={name:m.name||m.title,definitionName:def,implementation:'Cardigann',configContract:'CardigannSettings',enable:true,priority:25,tags:[],fields};
+      const defKey=(m.def||m.name||m.title||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+      const nameKey=(m.name||m.title||'').toLowerCase();
+
+      // Check if already exists
+      if(existingNames.has(nameKey)||existingDefs.has(defKey)){
+        m.status='exists';addLog('p',`~ Already in Prowlarr: ${m.name||m.title}`,'wn');
+        done++;setProgress('p',done,toImport.length);renderPGrid();
+        continue;
+      }
+
+      // Look up schema — try definitionName, aliases, then name
+      let schema=schemas[defKey]||schemas[nameKey]||null;
+      // Try aliases if defined
+      if(!schema&&m.aliases){
+        for(const alias of m.aliases){
+          schema=schemas[alias.toLowerCase()]||null;
+          if(schema)break;
+        }
+      }
+      // Try stripping spaces/special chars from the display name
+      if(!schema){
+        const stripped=nameKey.replace(/[^a-z0-9]/g,'');
+        schema=schemas[stripped]||null;
+      }
+      // Try partial match — find any schema key that contains or is contained by our key
+      if(!schema){
+        const stripped2=nameKey.replace(/[^a-z0-9]/g,'');
+        const matchKey=Object.keys(schemas).find(k=>{
+          const ks=k.replace(/[^a-z0-9]/g,'');
+          return ks===defKey||ks===stripped2||ks.includes(defKey)||defKey.includes(ks)||ks.includes(stripped2)||stripped2.includes(ks);
+        });
+        if(matchKey){schema=schemas[matchKey];addLog('p',`🔎 Fuzzy matched "${m.name||m.title}" → "${schema.definitionName}"`);}
+      }
+
+      // Log when no schema found so we can debug
+      if(!schema){
+        addLog('p',`⚠ No schema for "${m.name||m.title}" (tried: ${defKey}, ${nameKey.replace(/[^a-z0-9]/g,'')})`);}
+      const ck=cookieStore[defKey]||cookieStore[(m.def||'').toLowerCase()]||null;
+      // Get indexer metadata from our INDEXERS list
+      const idxMeta=INDEXERS.find(i=>(i.def||'').toLowerCase()===defKey||(i.name||'').toLowerCase()===nameKey)||m;
+
+      let body;
+      if(schema){
+        // Use the exact schema from Prowlarr — most reliable
+        const fields=schema.fields.map(f=>({...f})); // deep copy
+        // Inject credentials based on auth type
+        if(ck?.authType==='apikey'||idxMeta?.authType==='apikey'){
+          // API key auth — inject into matching field names
+          if(ck?.apiKey){
+            const keyField=idxMeta?.apiKeyField||'apikey';
+            const kf=fields.find(f=>f.name?.toLowerCase()===keyField.toLowerCase());
+            if(kf)kf.value=ck.apiKey; else fields.push({name:keyField,value:ck.apiKey});
+          }
+          if(ck?.apiUser&&idxMeta?.apiUserField){
+            const uf=fields.find(f=>f.name?.toLowerCase()===idxMeta.apiUserField.toLowerCase());
+            if(uf)uf.value=ck.apiUser; else fields.push({name:idxMeta.apiUserField,value:ck.apiUser});
+          }
+          if(ck?.rssKey&&idxMeta?.rssKeyField){
+            const rf=fields.find(f=>f.name?.toLowerCase()===idxMeta.rssKeyField.toLowerCase());
+            if(rf)rf.value=ck.rssKey; else fields.push({name:idxMeta.rssKeyField,value:ck.rssKey});
+          }
+        } else if(ck?.cookie){
+          // Cookie auth
+          const cf=fields.find(f=>f.name==='cookie'||f.name==='cookieHeader'||f.name==='Cookie');
+          if(cf)cf.value=ck.cookie; else fields.push({name:'cookie',value:ck.cookie});
+          if(ck?.userAgent){
+            const uf=fields.find(f=>f.name==='useragent'||f.name==='browserUserAgent');
+            if(uf)uf.value=ck.userAgent; else fields.push({name:'useragent',value:ck.userAgent});
+          }
+        }
+        // Usenet redirect flag
+        if(idxMeta?.redirect){
+          const rf=fields.find(f=>f.name==='redirect'||f.name==='Redirect');
+          if(rf)rf.value=true; else fields.push({name:'redirect',value:true});
+        }
+        body={
+          name:m.name||m.title,
+          definitionName:schema.definitionName,
+          implementation:schema.implementation,
+          configContract:schema.configContract,
+          enable:true,
+          priority:25,
+          appProfileId:appProfId,
+          tags:[],
+          fields
+        };
+      }else{
+        // No schema found — try Cardigann fallback
+        addLog('p',`⚠ No schema found for ${m.name||m.title} — trying Cardigann fallback`,'wn');
+        const def=m.def||defKey;
+        const fields=[{name:'definitionFile',value:def}];
+        if(ck?.cookie)fields.push({name:'cookie',value:ck.cookie});
+        if(ck?.userAgent)fields.push({name:'useragent',value:ck.userAgent});
+        // Add redirect for usenet fallback too
+        if(idxMeta?.redirect){fields.push({name:'redirect',value:true});}
+        body={name:m.name||m.title,definitionName:def,implementation:'Cardigann',configContract:'CardigannSettings',enable:true,priority:25,appProfileId:appProfId,tags:[],fields};
+      }
+
       const res=await fetch(`${url}/api/v1/indexer`,{method:'POST',headers:{'X-Api-Key':key,'Content-Type':'application/json'},body:JSON.stringify(body)});
-      if(res.status===201||res.ok){m.status='success';addLog('p',`✓ ${m.name||m.title}${ck?' (with cookie)':''}`,'ok');}
-      else if(res.status===400){const err=await res.json();const em=JSON.stringify(err).toLowerCase();if(em.includes('already')||em.includes('exist')){m.status='exists';addLog('p',`~ Exists: ${m.name||m.title}`,'wn');}else{m.status='failed';addLog('p',`✗ ${m.name||m.title}: ${JSON.stringify(err)}`,'er');}}
-      else{m.status='failed';addLog('p',`✗ ${m.name||m.title}: HTTP ${res.status}`,'er');}
+      if(res.status===201||res.ok){
+        m.status='success';addLog('p',`✓ ${m.name||m.title}${ck?' 🍪':''}${schema?'':' (fallback)'}`, 'ok');
+      }else if(res.status===400){
+        const err=await res.json();const em=JSON.stringify(err).toLowerCase();
+        if(em.includes('already')||em.includes('exist')||em.includes('unique')){m.status='exists';addLog('p',`~ Already exists: ${m.name||m.title}`,'wn');}
+        else if(em.includes('cloudflare')||em.includes('blocked')){m.status='failed';addLog('p',`✗ ${m.name||m.title}: Blocked by CloudFlare`,'er');}
+        else if(em.includes('username')||em.includes('password')||em.includes('credentials')){m.status='failed';addLog('p',`✗ ${m.name||m.title}: Needs credentials/cookie`,'wn');}
+        else{m.status='failed';addLog('p',`✗ ${m.name||m.title}: ${JSON.stringify(err)}`,'er');}
+      }else if(res.status===500){
+        const def500=body?.definitionName||'unknown';
+        m.status='failed';addLog('p',`✗ ${m.name||m.title}: HTTP 500 (definitionName: ${def500})`,'er');
+      }else{
+        m.status='failed';addLog('p',`✗ ${m.name||m.title}: HTTP ${res.status}`,'er');
+      }
     }catch(e){m.status='failed';addLog('p',`✗ ${m.name||m.title}: ${e.message}`,'er');}
     done++;setProgress('p',done,toImport.length);renderPGrid();
-    await new Promise(r=>setTimeout(r,380));
+    await new Promise(r=>setTimeout(r,300));
   }
   S.p.importing=false;
   document.getElementById('p-ptxt').textContent='Complete!';
   addLog('p',`Done — Added:${S.p.items.filter(x=>x.status==='success').length} Existed:${S.p.items.filter(x=>x.status==='exists').length} Failed:${S.p.items.filter(x=>x.status==='failed').length}`,'ok');
   renderPGrid();
 }
+
+
+// ─────────────────────────────────────
+// AUTO DETECT
+// ─────────────────────────────────────
+
 
 // ─────────────────────────────────────
 // INIT
