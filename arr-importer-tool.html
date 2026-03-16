@@ -1062,16 +1062,18 @@ async function testConn(p){
   if(!url||!key){setStatus(p,'err','Enter both URL and API key');return;}
   setStatus(p,'spin','Connecting…');
   document.getElementById(`${p}-btn`).disabled=true;
-  // Prowlarr uses /api/v1, everything else uses /api/v3
-  const apiVer=p==='p'?'v1':'v3';
+  // Prowlarr + Lidarr use /api/v1, Radarr + Sonarr use /api/v3
+  const apiVer=(p==='p'||p==='l')?'v1':'v3';
   try{
     const r=await fetch(`${url}/api/${apiVer}/system/status`,{headers:{'X-Api-Key':key}});
     if(!r.ok)throw new Error(`HTTP ${r.status}`);
     const d=await r.json();
     if(p!=='p'){
-      const qr=await fetch(`${url}/api/v3/qualityprofile`,{headers:{'X-Api-Key':key}});
+      // Lidarr uses v1, Radarr/Sonarr use v3
+      const av=p==='l'?'v1':'v3';
+      const qr=await fetch(`${url}/api/${av}/qualityprofile`,{headers:{'X-Api-Key':key}});
       const qd=await qr.json();S[p].qualityId=qd[0]?.id||1;
-      const rr=await fetch(`${url}/api/v3/rootfolder`,{headers:{'X-Api-Key':key}});
+      const rr=await fetch(`${url}/api/${av}/rootfolder`,{headers:{'X-Api-Key':key}});
       const rd=await rr.json();S[p].rootFolder=rd[0]?.path||'';
       if(p==='r'){
         const qSel=document.getElementById('r-quality');
