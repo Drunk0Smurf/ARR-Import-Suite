@@ -290,12 +290,12 @@ select option{background:var(--surface);}
     <div class="slabel">// Movie List — CSV</div>
     <div class="dz" id="r-dz"><input type="file" accept=".csv" id="r-file" onchange="handleFile('r',event)"/>
       <div class="dicon">🎬</div><div class="dtitle">Drop Movies CSV Here</div>
-      <div class="dsub">or click to browse<br>Columns: <code>Title</code> <code>Year</code> <code>TMDB_ID</code> <code>Genre</code> <code>Vibe</code> <code>Director</code></div>
+      <div class="dsub">or click to browse<br>Required: <code>Title</code> &nbsp; Optional: <code>Year</code> <code>TMDB_ID</code> <code>Genre</code> <code>Vibe</code> <code>Director</code></div>
     </div>
     <div class="lbar" id="r-lbar">✓ <span id="r-lmsg"></span><button class="btn btng" style="margin-left:auto;padding:3px 10px;font-size:10px" onclick="clearData('r')">Clear</button></div>
     <div class="mapper" id="r-mapper"><div class="slabel" style="margin-bottom:8px">// Map Columns</div><div class="mgrid" id="r-mgrid"></div><button class="btn btnp" style="margin-top:12px" onclick="applyMap('r')">Apply</button></div>
     <div class="note-row">
-      <div class="note">💡 With <code>TMDB_ID</code>: instant. Without: auto-searches by title + year. Add a <code>Director</code> column to enable director filtering.</div>
+      <div class="note">💡 <code>Title</code> is the only required column — Radarr will search for everything else automatically. Add <code>Year</code> for more accurate matching. <code>TMDB_ID</code> is optional.</div>
       <button class="btn btn-dl" onclick="downloadTemplate('r')">⬇ Template CSV</button>
     </div>
   </div>
@@ -335,12 +335,12 @@ select option{background:var(--surface);}
     <div class="slabel">// Show List — CSV</div>
     <div class="dz" id="s-dz"><input type="file" accept=".csv" id="s-file" onchange="handleFile('s',event)"/>
       <div class="dicon">📺</div><div class="dtitle">Drop Shows CSV Here</div>
-      <div class="dsub">or click to browse<br>Columns: <code>Title</code> <code>Year</code> <code>TVDB_ID</code> <code>Genre</code> <code>Network</code></div>
+      <div class="dsub">or click to browse<br>Required: <code>Title</code> &nbsp; Optional: <code>Year</code> <code>TVDB_ID</code> <code>Genre</code> <code>Network</code></div>
     </div>
     <div class="lbar" id="s-lbar">✓ <span id="s-lmsg"></span><button class="btn btng" style="margin-left:auto;padding:3px 10px;font-size:10px" onclick="clearData('s')">Clear</button></div>
     <div class="mapper" id="s-mapper"><div class="slabel" style="margin-bottom:8px">// Map Columns</div><div class="mgrid" id="s-mgrid"></div><button class="btn btnp" style="margin-top:12px" onclick="applyMap('s')">Apply</button></div>
     <div class="note-row">
-      <div class="note">💡 With <code>TVDB_ID</code>: instant. Without: auto-searches by title + year.</div>
+      <div class="note">💡 <code>Title</code> is the only required column — Sonarr will search for everything else automatically. Add <code>Year</code> for more accurate matching. <code>TVDB_ID</code> is optional.</div>
       <button class="btn btn-dl" onclick="downloadTemplate('s')">⬇ Template CSV</button>
     </div>
   </div>
@@ -1168,8 +1168,36 @@ function setProgress(p,done,total){
 // ─────────────────────────────────────
 // LOOKUP
 // ─────────────────────────────────────
-async function lookupR(url,key,title,year){const q=year?`${title} ${year}`:title;const r=await fetch(`${url}/api/v3/movie/lookup?term=${encodeURIComponent(q)}`,{headers:{'X-Api-Key':key}});if(!r.ok)return null;const d=await r.json();return d[0]?.tmdbId||null;}
-async function lookupS(url,key,title,year){const q=year?`${title} ${year}`:title;const r=await fetch(`${url}/api/v3/series/lookup?term=${encodeURIComponent(q)}`,{headers:{'X-Api-Key':key}});if(!r.ok)return null;const d=await r.json();return d[0]?.tvdbId||null;}
+async function lookupR(url,key,title,year){
+  // Search Radarr by title+year, return {tmdbId, title, year} of best match
+  const queries=year?[`${title} ${year}`,title]:[title];
+  for(const q of queries){
+    try{
+      const r=await fetch(`${url}/api/v3/movie/lookup?term=${encodeURIComponent(q)}`,{headers:{'X-Api-Key':key}});
+      if(!r.ok)continue;
+      const d=await r.json();
+      if(!d.length)continue;
+      // Prefer exact year match, fall back to first result
+      const match=year?d.find(m=>m.year===parseInt(year))||d[0]:d[0];
+      return{tmdbId:match.tmdbId,title:match.title,year:match.year};
+    }catch(e){}
+  }
+  return null;
+}
+async function lookupS(url,key,title,year){
+  const queries=year?[`${title} ${year}`,title]:[title];
+  for(const q of queries){
+    try{
+      const r=await fetch(`${url}/api/v3/series/lookup?term=${encodeURIComponent(q)}`,{headers:{'X-Api-Key':key}});
+      if(!r.ok)continue;
+      const d=await r.json();
+      if(!d.length)continue;
+      const match=year?d.find(s=>s.year===parseInt(year))||d[0]:d[0];
+      return{tvdbId:match.tvdbId,title:match.title,year:match.year};
+    }catch(e){}
+  }
+  return null;
+}
 async function lookupL(url,key,name){const r=await fetch(`${url}/api/v1/artist/lookup?term=${encodeURIComponent(name)}`,{headers:{'X-Api-Key':key}});if(!r.ok)return null;const d=await r.json();return d[0]||null;}
 
 // ─────────────────────────────────────
@@ -1192,20 +1220,44 @@ async function go(p){
     m.status='importing';render(p);
     try{
       if(p==='r'){
-        let tid=m.tmdb?parseInt(m.tmdb):null;
-        if(!tid){addLog(p,`🔍 ${m.title}…`);tid=await lookupR(url,key,m.title,m.year);}
-        if(!tid){m.status='failed';addLog(p,`✗ Not found: ${m.title}`,'er');done++;continue;}
+        // Step 1: Always search Radarr by title+year — Radarr's result is always used
+        addLog(p,`🔍 ${m.title}${m.year?' ('+m.year+')':''}…`);
+        let result=await lookupR(url,key,m.title,m.year);
+        // Step 2: If title search fails, try CSV TMDB ID as a direct lookup fallback
+        if(!result&&m.tmdb){
+          try{
+            const tr=await fetch(`${url}/api/v3/movie/lookup/tmdb?tmdbId=${parseInt(m.tmdb)}`,{headers:{'X-Api-Key':key}});
+            if(tr.ok){const td=await tr.json();if(td?.tmdbId)result={tmdbId:td.tmdbId,title:td.title,year:td.year};}
+          }catch(e){}
+        }
+        if(!result){m.status='failed';addLog(p,`✗ Not found: ${m.title}`,'er');done++;continue;}
+        // Step 3: If CSV had an ID, compare with what Radarr found — always use Radarr's
+        if(m.tmdb&&parseInt(m.tmdb)!==result.tmdbId){
+          addLog(p,`⚠ CSV ID ${m.tmdb} differs from Radarr match ${result.tmdbId} ("${result.title}") — using Radarr's`,'wn');
+        }
         const qId=parseInt(document.getElementById('r-quality')?.value)||S.r.qualityId;
         const rf=document.getElementById('r-rootfolder')?.value||S.r.rootFolder;
-        const body={tmdbId:tid,title:m.title,year:m.year,qualityProfileId:qId,rootFolderPath:rf,monitored:true,addOptions:{searchForMovie:true}};
+        const body={tmdbId:result.tmdbId,title:result.title,year:result.year,qualityProfileId:qId,rootFolderPath:rf,monitored:true,addOptions:{searchForMovie:true}};
         const res=await fetch(`${url}/api/v3/movie`,{method:'POST',headers:{'X-Api-Key':key,'Content-Type':'application/json'},body:JSON.stringify(body)});
         await handleRes(p,m,res);
       }else if(p==='s'){
-        let tid=m.tmdb?parseInt(m.tmdb):null;
-        if(!tid){addLog(p,`🔍 ${m.title}…`);tid=await lookupS(url,key,m.title,m.year);}
-        if(!tid){m.status='failed';addLog(p,`✗ Not found: ${m.title}`,'er');done++;continue;}
+        // Step 1: Always search Sonarr by title+year — Sonarr's result is always used
+        addLog(p,`🔍 ${m.title}${m.year?' ('+m.year+')':''}…`);
+        let result=await lookupS(url,key,m.title,m.year);
+        // Step 2: If title search fails, try CSV TVDB ID as direct lookup fallback
+        if(!result&&m.tmdb){
+          try{
+            const tr=await fetch(`${url}/api/v3/series/lookup?term=tvdb:${parseInt(m.tmdb)}`,{headers:{'X-Api-Key':key}});
+            if(tr.ok){const td=await tr.json();if(td[0]?.tvdbId)result={tvdbId:td[0].tvdbId,title:td[0].title,year:td[0].year};}
+          }catch(e){}
+        }
+        if(!result){m.status='failed';addLog(p,`✗ Not found: ${m.title}`,'er');done++;continue;}
+        // Step 3: If CSV had an ID, compare with Sonarr's result — always use Sonarr's
+        if(m.tmdb&&parseInt(m.tmdb)!==result.tvdbId){
+          addLog(p,`⚠ CSV ID ${m.tmdb} differs from Sonarr match ${result.tvdbId} ("${result.title}") — using Sonarr's`,'wn');
+        }
         const mon=document.getElementById('s-mon').value;const doS=document.getElementById('s-srch').value==='true';
-        const body={tvdbId:tid,title:m.title,qualityProfileId:S.s.qualityId,rootFolderPath:S.s.rootFolder,monitored:true,monitor:mon,addOptions:{searchForMissingEpisodes:doS}};
+        const body={tvdbId:result.tvdbId,title:result.title,qualityProfileId:S.s.qualityId,rootFolderPath:S.s.rootFolder,monitored:true,monitor:mon,addOptions:{searchForMissingEpisodes:doS}};
         const res=await fetch(`${url}/api/v3/series`,{method:'POST',headers:{'X-Api-Key':key,'Content-Type':'application/json'},body:JSON.stringify(body)});
         await handleRes(p,m,res);
       }else if(p==='l'){
