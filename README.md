@@ -1,6 +1,3 @@
-# ARR-Import-Suite
-Bulk import movies, shows, artists &amp; indexers into Radarr, Sonarr, Prowlarr and Lidarr from a single drag-and-drop HTML file. No install, no server, no nonsense. Includes cookie manager for private trackers and one-click Prowlarr sync.
-
 # 🎬 *Arr Bulk Importer
 
 A free, open-source, single-file web tool for bulk importing movies, shows, artists and indexers into your self-hosted **Radarr**, **Sonarr**, **Prowlarr** and **Lidarr** instances — all from a clean, dark UI that runs entirely in your browser.
@@ -54,29 +51,9 @@ No installation. No server. No accounts. Just open the HTML file (or visit the G
 
 ## 🚀 How to Use
 
-### Option A — GitHub Pages (easiest)
-Just visit the live URL and use it directly in your browser:
-
-```
-https://Drunk0Smurf.github.io/arr-bulk-importer
-```
-
-### Option B — Local (recommended for privacy)
 1. Download `arr-importer.html`
-2. Serve it on your local network (so it can reach your *arr apps):
-
-```bash
-# Python (built into most systems)
-python3 -m http.server 8080
-
-# Then open in your browser:
-http://localhost:8080/arr-importer.html
-
-# Or from another device on your network:
-http://YOUR-PC-IP:8080/arr-importer.html
-```
-
-> **Why serve it?** Browsers block direct `file://` access to local network addresses (CORS). Serving it over HTTP on your local network fixes this.
+2. Open it in your browser
+3. That's it — no install, no server, nothing to set up
 
 ---
 
