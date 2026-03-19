@@ -1,0 +1,1674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>*Arr Suite Importer</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#09090f;--surface:#11111a;--surface2:#181825;--border:#252535;
+  --text:#e8e8f2;--muted:#5a5a7a;
+  --ok:#2ecc71;--err:#e74c3c;--warn:#f39c12;
+  --r:#f5c518;--r2:#e07820;--rs:rgba(245,197,24,.07);
+  --s:#35c8f0;--s2:#2271e0;--ss:rgba(53,200,240,.07);
+  --p:#ff7b1a;--p2:#cc5500;--ps:rgba(255,123,26,.07);
+  --l:#3ddc84;--l2:#1a9e58;--ls:rgba(61,220,132,.07);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.04) 2px,rgba(0,0,0,.04) 4px);pointer-events:none;z-index:999;}
+
+/* HEADER */
+header{display:flex;align-items:stretch;border-bottom:1px solid var(--border);background:linear-gradient(180deg,#0d0d18,var(--bg));position:sticky;top:0;z-index:100;}
+.hbrand{padding:13px 20px;display:flex;flex-direction:column;justify-content:center;border-right:1px solid var(--border);min-width:160px;}
+.htitle{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;line-height:1;}
+.htitle .r{color:var(--r);}.htitle .s{color:var(--s);}.htitle .p{color:var(--p);}.htitle .l{color:var(--l);}.htitle .sep{color:var(--muted);margin:0 2px;font-size:15px;}
+.hsub{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:3px;}
+.tabs{display:flex;flex:1;}
+.tab{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;cursor:pointer;border:none;background:transparent;color:var(--muted);border-bottom:3px solid transparent;transition:all .2s;height:58px;}
+.tab .td{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.3;transition:all .2s;}
+.tab:hover{color:var(--text);}
+.tab.tr.active{color:var(--r);border-bottom-color:var(--r);background:var(--rs);}.tab.tr.active .td{opacity:1;box-shadow:0 0 8px var(--r);}
+.tab.ts.active{color:var(--s);border-bottom-color:var(--s);background:var(--ss);}.tab.ts.active .td{opacity:1;box-shadow:0 0 8px var(--s);}
+.tab.tp.active{color:var(--p);border-bottom-color:var(--p);background:var(--ps);}.tab.tp.active .td{opacity:1;box-shadow:0 0 8px var(--p);}
+.tab.tl.active{color:var(--l);border-bottom-color:var(--l);background:var(--ls);}.tab.tl.active .td{opacity:1;box-shadow:0 0 8px var(--l);}
+
+/* LAYOUT */
+.wrap{max-width:1100px;margin:0 auto;padding:22px 28px;}
+.apanel{display:none;}.apanel.active{display:block;}
+
+/* PANEL */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:20px 24px;margin-bottom:14px;position:relative;overflow:hidden;}
+.ar .panel::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--r),var(--r2));}
+.as .panel::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--s),var(--s2));}
+.ap .panel::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--p),var(--p2));}
+.al .panel::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--l),var(--l2));}
+.slabel{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:13px;}
+
+/* INPUTS */
+.cgrid{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end;}
+.field{display:flex;flex-direction:column;gap:4px;}
+.field label{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;}
+input[type=text],input[type=password],textarea{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 11px;font-family:'DM Mono',monospace;font-size:12px;border-radius:4px;outline:none;width:100%;transition:border-color .2s,box-shadow .2s;}
+textarea{resize:vertical;line-height:1.6;min-height:68px;}
+.ar input:focus,.ar textarea:focus,.ar select:focus{border-color:var(--r);box-shadow:0 0 0 2px rgba(245,197,24,.1);}
+.as input:focus,.as textarea:focus,.as select:focus{border-color:var(--s);box-shadow:0 0 0 2px rgba(53,200,240,.1);}
+.ap input:focus,.ap textarea:focus,.ap select:focus{border-color:var(--p);box-shadow:0 0 0 2px rgba(255,123,26,.1);}
+.al input:focus,.al textarea:focus,.al select:focus{border-color:var(--l);box-shadow:0 0 0 2px rgba(61,220,132,.1);}
+select{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px 10px;font-family:'DM Mono',monospace;font-size:11px;border-radius:4px;outline:none;}
+select option{background:var(--surface);}
+.sbar{display:flex;align-items:center;gap:10px;padding:8px 11px;background:var(--bg);border:1px solid var(--border);border-radius:4px;margin-top:10px;font-family:'DM Mono',monospace;font-size:11px;min-height:36px;}
+.sdot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex-shrink:0;transition:all .3s;}
+.sdot.ok{background:var(--ok);box-shadow:0 0 8px var(--ok);}.sdot.err{background:var(--err);}.sdot.spin{animation:bl .8s infinite;}
+.ar .sdot.spin{background:var(--r);}.as .sdot.spin{background:var(--s);}.ap .sdot.spin{background:var(--p);}.al .sdot.spin{background:var(--l);}
+@keyframes bl{0%,100%{opacity:1}50%{opacity:.15}}
+
+/* BUTTONS */
+.btn{padding:8px 16px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;border:none;border-radius:4px;cursor:pointer;transition:all .18s;white-space:nowrap;}
+.ar .btnp{background:var(--r);color:#000;font-weight:600;}
+.ar .btnp:hover:not(:disabled){background:#ffd040;transform:translateY(-1px);box-shadow:0 4px 14px rgba(245,197,24,.3);}
+.as .btnp{background:var(--s);color:#000;font-weight:600;}
+.as .btnp:hover:not(:disabled){background:#5dd8f8;transform:translateY(-1px);box-shadow:0 4px 14px rgba(53,200,240,.3);}
+.ap .btnp{background:var(--p);color:#000;font-weight:600;}
+.ap .btnp:hover:not(:disabled){background:#ff9a4d;transform:translateY(-1px);box-shadow:0 4px 14px rgba(255,123,26,.3);}
+.al .btnp{background:var(--l);color:#000;font-weight:600;}
+.al .btnp:hover:not(:disabled){background:#5fedad;transform:translateY(-1px);box-shadow:0 4px 14px rgba(61,220,132,.3);}
+.btnp:disabled{opacity:.35;cursor:not-allowed;transform:none!important;box-shadow:none!important;}
+.btng{background:transparent;color:var(--muted);border:1px solid var(--border);}
+.btng:hover{color:var(--text);border-color:var(--muted);}
+/* Coloured ghost buttons for push actions */
+.btn-push-r{background:rgba(245,197,24,.1);color:var(--r);border:1px solid rgba(245,197,24,.3);}
+.btn-push-r:hover{background:rgba(245,197,24,.2);border-color:var(--r);}
+.btn-push-s{background:rgba(53,200,240,.1);color:var(--s);border:1px solid rgba(53,200,240,.3);}
+.btn-push-s:hover{background:rgba(53,200,240,.2);border-color:var(--s);}
+.btn-push-p{background:rgba(255,123,26,.1);color:var(--p);border:1px solid rgba(255,123,26,.3);}
+.btn-push-p:hover{background:rgba(255,123,26,.2);border-color:var(--p);}
+.btn-dl{background:rgba(255,255,255,.05);color:var(--muted);border:1px solid var(--border);}
+.btn-dl:hover{color:var(--text);border-color:var(--muted);}
+.btn-push-l{background:rgba(61,220,132,.1);color:var(--l);border:1px solid rgba(61,220,132,.3);}
+.btn-push-l:hover{background:rgba(61,220,132,.2);border-color:var(--l);}
+
+/* SOURCE TABS */
+.stabs{display:flex;gap:8px;margin-bottom:14px;}
+.stab{padding:5px 14px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all .18s;}
+.ap .stab.on{background:var(--p);color:#000;border-color:var(--p);font-weight:600;}.ap .stab:hover{border-color:var(--p);color:var(--p);}
+.al .stab.on{background:var(--l);color:#000;border-color:var(--l);font-weight:600;}.al .stab:hover{border-color:var(--l);color:var(--l);}
+
+/* DROP ZONE */
+.dz{border:2px dashed var(--border);border-radius:8px;padding:38px 20px;text-align:center;cursor:pointer;transition:all .2s;position:relative;}
+.dz input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.ar .dz:hover,.ar .dz.ov{border-color:var(--r);background:var(--rs);}
+.as .dz:hover,.as .dz.ov{border-color:var(--s);background:var(--ss);}
+.ap .dz:hover,.ap .dz.ov{border-color:var(--p);background:var(--ps);}
+.al .dz:hover,.al .dz.ov{border-color:var(--l);background:var(--ls);}
+.dicon{font-size:32px;margin-bottom:8px;line-height:1;}
+.dtitle{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;margin-bottom:5px;}
+.ar .dtitle{color:var(--r);}.as .dtitle{color:var(--s);}.ap .dtitle{color:var(--p);}.al .dtitle{color:var(--l);}
+.dsub{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);line-height:2;}
+.dsub code{padding:1px 5px;border-radius:3px;font-size:9px;}
+.ar .dsub code{background:rgba(245,197,24,.1);color:var(--r);}
+.as .dsub code{background:rgba(53,200,240,.1);color:var(--s);}
+.ap .dsub code{background:rgba(61,220,132,.1);color:var(--p);}
+.al .dsub code{background:rgba(184,127,255,.1);color:var(--l);}
+.lbar{display:none;flex-direction:column;gap:7px;padding:9px 13px;background:rgba(46,204,113,.07);border:1px solid rgba(46,204,113,.2);border-radius:4px;font-family:'DM Mono',monospace;font-size:11px;color:var(--ok);margin-top:10px;}
+.lbar.on{display:flex;}
+.lbar-top{display:flex;align-items:center;gap:10px;}
+.file-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px;}
+.fpill{display:flex;align-items:center;gap:5px;padding:3px 8px 3px 10px;border-radius:20px;font-family:'DM Mono',monospace;font-size:10px;border:1px solid rgba(46,204,113,.3);background:rgba(46,204,113,.08);color:var(--ok);}
+.fpill-x{background:none;border:none;color:var(--ok);cursor:pointer;font-size:12px;line-height:1;padding:0 1px;opacity:.6;transition:opacity .15s;}
+.fpill-x:hover{opacity:1;}
+
+/* NOTE */
+.note{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);padding:8px 11px;border-radius:4px;line-height:1.8;}
+.note code{padding:1px 5px;border-radius:3px;font-size:9px;}
+.ar .note{background:var(--rs);border:1px solid rgba(245,197,24,.1);}.ar .note code{background:rgba(245,197,24,.12);color:var(--r);}
+.as .note{background:var(--ss);border:1px solid rgba(53,200,240,.1);}.as .note code{background:rgba(53,200,240,.12);color:var(--s);}
+.ap .note{background:var(--ps);border:1px solid rgba(61,220,132,.1);}.ap .note code{background:rgba(61,220,132,.12);color:var(--p);}
+.al .note{background:var(--ls);border:1px solid rgba(184,127,255,.1);}.al .note code{background:rgba(184,127,255,.12);color:var(--l);}
+
+/* NOTE ROW: note + template button side by side */
+.note-row{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap;}
+.note-row .note{flex:1;margin-top:0;}
+
+/* MAPPER */
+.mapper{display:none;margin-top:12px;}.mapper.on{display:block;}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:10px;}
+.mfield{display:flex;flex-direction:column;gap:4px;}
+.mfield label{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+
+/* EXTRA ROW */
+.xrow{display:flex;align-items:center;gap:12px;margin-top:12px;flex-wrap:wrap;}
+.xrow label{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+
+/* STATS */
+.stats{display:flex;gap:18px;padding:11px 16px;background:var(--surface);border:1px solid var(--border);border-radius:6px;margin-bottom:13px;flex-wrap:wrap;}
+.stat{display:flex;flex-direction:column;gap:1px;}
+.sn{font-family:'Bebas Neue',sans-serif;font-size:28px;line-height:1;}
+.ar .sn{color:var(--r);}.as .sn{color:var(--s);}.ap .sn{color:var(--p);}.al .sn{color:var(--l);}
+.sn.gn{color:var(--ok)!important;}.sn.og{color:var(--warn)!important;}.sn.rd{color:var(--err)!important;}
+.sl{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;}
+
+/* CONTROLS */
+.crow{display:flex;align-items:center;gap:9px;margin-bottom:11px;flex-wrap:wrap;}
+.sbox{flex:1;min-width:160px;}
+.frow{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:11px;}
+.chip{padding:3px 10px;font-family:'DM Mono',monospace;font-size:10px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all .15s;}
+.ar .chip:hover,.ar .chip.on{border-color:var(--r);color:var(--r);background:var(--rs);}
+.as .chip:hover,.as .chip.on{border-color:var(--s);color:var(--s);background:var(--ss);}
+.ap .chip:hover,.ap .chip.on{border-color:var(--p);color:var(--p);background:var(--ps);}
+.al .chip:hover,.al .chip.on{border-color:var(--l);color:var(--l);background:var(--ls);}
+
+/* TABLE */
+.tbl{background:var(--surface);border:1px solid var(--border);border-radius:6px;overflow:hidden;}
+.thead{display:grid;grid-template-columns:32px 1fr 60px 150px 120px 100px;padding:7px 15px;background:var(--surface2);border-bottom:1px solid var(--border);font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;}
+.tbody{max-height:420px;overflow-y:auto;}
+.tbody::-webkit-scrollbar{width:5px;}.tbody::-webkit-scrollbar-track{background:var(--surface);}.tbody::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+.trow{display:grid;grid-template-columns:32px 1fr 60px 150px 120px 100px;padding:8px 15px;border-bottom:1px solid rgba(37,37,53,.6);align-items:center;transition:background .1s;cursor:pointer;}
+.trow:hover{background:var(--surface2);}.trow.sel{background:rgba(255,255,255,.015);}.trow.success{background:rgba(46,204,113,.05);}.trow.failed{background:rgba(231,76,60,.05);}.trow.exists{background:rgba(243,156,18,.04);}
+.trow input[type=checkbox]{width:13px;height:13px;cursor:pointer;}
+.ar .trow input{accent-color:var(--r);}.as .trow input{accent-color:var(--s);}.ap .trow input{accent-color:var(--p);}.al .trow input{accent-color:var(--l);}
+.tt{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:10px;}
+.ty{font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);}
+.tg{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tv{font-family:'DM Mono',monospace;font-size:10px;padding:2px 7px;border-radius:10px;border:1px solid var(--border);color:var(--muted);display:inline-block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
+.badge{font-family:'DM Mono',monospace;font-size:10px;display:flex;align-items:center;gap:5px;}
+.badge .bd{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.badge.queued .bd{background:var(--muted);}.badge.importing .bd{animation:bl .7s infinite;}
+.ar .badge.importing .bd{background:var(--r);}.as .badge.importing .bd{background:var(--s);}.ap .badge.importing .bd{background:var(--p);}.al .badge.importing .bd{background:var(--l);}
+.badge.success .bd{background:var(--ok);}.badge.failed .bd{background:var(--err);}.badge.exists .bd{background:var(--warn);}
+.sarow{display:flex;align-items:center;gap:8px;padding:6px 15px;background:var(--surface2);border-bottom:1px solid var(--border);font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);cursor:pointer;user-select:none;}
+.ar .sarow input{accent-color:var(--r);}.as .sarow input{accent-color:var(--s);}.ap .sarow input{accent-color:var(--p);}.al .sarow input{accent-color:var(--l);}
+.empty{text-align:center;padding:50px 20px;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);line-height:2;}
+
+/* PROGRESS */
+.prog{display:none;margin-top:13px;}.prog.on{display:block;}
+.pmeta{display:flex;justify-content:space-between;align-items:center;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:6px;gap:8px;}
+.ptimer{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.5px;white-space:nowrap;}
+.ptrack{height:3px;background:var(--border);border-radius:2px;overflow:hidden;}
+.ar .pfill{height:100%;background:linear-gradient(90deg,var(--r),var(--r2));border-radius:2px;transition:width .3s;width:0%;}
+.as .pfill{height:100%;background:linear-gradient(90deg,var(--s),var(--s2));border-radius:2px;transition:width .3s;width:0%;}
+.ap .pfill{height:100%;background:linear-gradient(90deg,var(--p),var(--p2));border-radius:2px;transition:width .3s;width:0%;}
+.al .pfill{height:100%;background:linear-gradient(90deg,var(--l),var(--l2));border-radius:2px;transition:width .3s;width:0%;}
+.logbox{display:none;background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:9px 11px;margin-top:9px;max-height:100px;overflow-y:auto;font-family:'DM Mono',monospace;font-size:11px;line-height:1.8;}
+.logbox.on{display:block;}
+.logbox::-webkit-scrollbar{width:4px;}.logbox::-webkit-scrollbar-thumb{background:var(--border);}
+.ll{color:var(--muted);}.ll.ok{color:var(--ok);}.ll.er{color:var(--err);}.ll.wn{color:var(--warn);}
+
+/* PROWLARR INDEXER GRID */
+.idx-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:7px;}
+.idx-card{background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:9px 11px;display:flex;align-items:center;gap:9px;cursor:pointer;transition:all .15s;}
+.idx-card:hover{border-color:var(--p);}.idx-card.sel{border-color:var(--p);background:var(--ps);}
+.idx-card input{accent-color:var(--p);width:13px;height:13px;flex-shrink:0;}
+.idx-info{flex:1;min-width:0;}
+.idx-name{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.idx-meta{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);margin-top:3px;display:flex;gap:5px;flex-wrap:wrap;}
+.ibadge{font-family:'DM Mono',monospace;font-size:9px;padding:1px 5px;border-radius:3px;}
+.ibadge.torrent{background:rgba(255,123,26,.12);color:var(--p);}
+.ibadge.usenet{background:rgba(53,200,240,.12);color:var(--s);}
+.ibadge.pub{background:rgba(245,197,24,.12);color:var(--r);}
+.ibadge.priv{background:rgba(61,220,132,.12);color:var(--l);}
+.idx-dot{width:6px;height:6px;border-radius:50%;background:var(--muted);flex-shrink:0;}
+.idx-dot.ok{background:var(--ok);}.idx-dot.er{background:var(--err);}.idx-dot.wn{background:var(--warn);}.idx-dot.spin{background:var(--p);animation:bl .7s infinite;}
+
+/* PUSH TO ARR PANEL */
+.push-panel{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:20px 24px;margin-bottom:14px;position:relative;overflow:hidden;}
+.push-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--p),var(--p2));}
+.push-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;}
+.push-card{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:14px 16px;}
+.push-card-title{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;margin-bottom:4px;}
+.push-card-title.rt{color:var(--r);}.push-card-title.st{color:var(--s);}
+.push-card-sub{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:12px;line-height:1.7;}
+.push-fields{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;}
+.push-field{display:flex;flex-direction:column;gap:3px;}
+.push-field label{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+.push-status{font-family:'DM Mono',monospace;font-size:10px;padding:6px 10px;border-radius:4px;background:var(--surface2);border:1px solid var(--border);margin-top:8px;min-height:32px;display:flex;align-items:center;gap:8px;}
+
+/* COOKIE MANAGER */
+.ck-section{margin-top:0;}
+.ck-title-row{display:flex;align-items:baseline;gap:12px;margin-bottom:4px;}
+.ck-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--p);}
+.ck-sub{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);}
+.ck-howto{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:13px 15px;margin-bottom:14px;}
+.ck-howto-title{font-family:'DM Mono',monospace;font-size:10px;color:var(--p);letter-spacing:1px;text-transform:uppercase;margin-bottom:7px;}
+.ck-howto ol{padding-left:16px;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);line-height:2.2;}
+.ck-howto code{background:rgba(255,123,26,.1);color:var(--p);padding:1px 5px;border-radius:3px;}
+.ck-jump-row{display:flex;align-items:center;gap:10px;margin-bottom:13px;flex-wrap:wrap;}
+.ck-jump-row label{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+.ck-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:11px;}
+.ck-card{background:var(--bg);border:1px solid var(--border);border-radius:6px;overflow:hidden;transition:border-color .2s;}
+.ck-card:hover{border-color:rgba(61,220,132,.3);}.ck-card.saved{border-color:var(--ok);}
+.ck-head{display:flex;align-items:center;gap:9px;padding:9px 13px;background:var(--surface2);border-bottom:1px solid var(--border);}
+.ck-card-name{font-size:13px;font-weight:500;}.ck-card-def{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);margin-left:auto;}
+.ck-body{padding:11px 13px;display:flex;flex-direction:column;gap:9px;}
+.ck-field{display:flex;flex-direction:column;gap:3px;}
+.ck-field label{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+.ck-strip-note{font-family:'DM Mono',monospace;font-size:9px;color:var(--warn);display:none;margin-top:2px;}
+.ck-strip-note.on{display:block;}
+.ck-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-top:3px;}
+.ck-saved-badge{font-family:'DM Mono',monospace;font-size:9px;color:var(--ok);display:none;}
+.ck-card.saved .ck-saved-badge{display:inline;}
+
+.divider{height:1px;background:var(--border);margin:18px 0;}
+
+@media(max-width:700px){
+  .cgrid,.push-grid{grid-template-columns:1fr;}
+  .thead,.trow{grid-template-columns:32px 1fr 50px 80px;}
+  .thead>*:nth-child(5),.trow>*:nth-child(5),.thead>*:nth-child(6),.trow>*:nth-child(6){display:none;}
+  .wrap{padding:12px;}
+  header{flex-direction:column;}.tabs{width:100%;}.tab{height:46px;font-size:14px;}
+  .hbrand{min-width:unset;}.idx-grid,.ck-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hbrand">
+    <div class="htitle"><span class="r">R</span><span class="sep">/</span><span class="s">S</span><span class="sep">/</span><span class="p">P</span><span class="sep">/</span><span class="l">L</span></div>
+    <div class="hsub">*Arr Bulk Importer</div>
+  </div>
+  <div class="tabs">
+    <button class="tab tr active" onclick="switchApp('r')"><div class="td"></div>Radarr</button>
+    <button class="tab ts" onclick="switchApp('s')"><div class="td"></div>Sonarr</button>
+    <button class="tab tp" onclick="switchApp('p')"><div class="td"></div>Prowlarr</button>
+    <button class="tab tl" onclick="switchApp('l')"><div class="td"></div>Lidarr</button>
+  </div>
+</header>
+
+<div class="wrap">
+
+<!-- ═══════════════════════ RADARR -->
+<div class="apanel ar active" id="panel-r">
+  <div class="panel">
+    <div class="slabel">// Radarr Connection</div>
+    <div class="cgrid">
+      <div class="field"><label>URL</label><input type="text" id="r-url" placeholder="http://192.168.1.x:7878"/></div>
+      <div class="field"><label>API Key</label><input type="password" id="r-key" placeholder="Settings → General → Security"/></div>
+      <button class="btn btnp" onclick="testConn('r')">Test</button>
+    </div>
+    <div class="sbar"><div class="sdot" id="r-dot"></div><span id="r-st" style="font-size:11px;color:var(--muted)">Enter Radarr URL and API key, then click Test</span></div>
+    <div class="xrow" id="r-profile-row" style="display:none">
+      <div class="field" style="flex:1;min-width:180px"><label>Quality Profile</label><select id="r-quality"></select></div>
+      <div class="field" style="flex:1;min-width:200px"><label>Root Folder</label><select id="r-rootfolder"></select></div>
+    </div>
+    <div class="note" style="margin-top:10px">💡 Quality profile and root folder are fetched live from Radarr after connecting.</div>
+  </div>
+  <div class="panel">
+    <div class="slabel">// Movie List — CSV</div>
+    <div class="dz" id="r-dz"><input type="file" accept=".csv" multiple id="r-file" onchange="handleFile('r',event)"/>
+      <div class="dicon">🎬</div><div class="dtitle">Drop Movies CSV Here</div>
+      <div class="dsub">or click to browse · <strong style="color:var(--r)">multiple files supported</strong><br>Required: <code>Title</code> &nbsp; Optional: <code>Year</code> <code>TMDB_ID</code> <code>Genre</code> <code>Vibe</code> <code>Director</code></div>
+    </div>
+    <div class="lbar" id="r-lbar">
+      <div class="lbar-top">✓ <span id="r-lmsg"></span><button class="btn btng" style="margin-left:auto;padding:3px 10px;font-size:10px" onclick="clearData('r')">Clear All</button></div>
+      <div class="file-pills" id="r-pills"></div>
+    </div>
+    <div class="mapper" id="r-mapper"><div class="slabel" style="margin-bottom:8px">// Map Columns</div><div class="mgrid" id="r-mgrid"></div><button class="btn btnp" style="margin-top:12px" onclick="applyMap('r')">Apply</button></div>
+    <div class="note-row">
+      <div class="note">💡 <code>Title</code> is the only required column — Radarr will search for everything else automatically. Add <code>Year</code> for more accurate matching. <code>TMDB_ID</code> is optional.</div>
+      <button class="btn btn-push-r" id="r-export-btn" onclick="exportFrom('r')">⬆ Export CSV from Radarr</button>
+      <button class="btn btn-dl" onclick="downloadTemplate('r')">⬇ Template CSV</button>
+    </div>
+  </div>
+  <div class="stats"><div class="stat"><div class="sn" id="r-nt">0</div><div class="sl">Total</div></div><div class="stat"><div class="sn" id="r-ns">0</div><div class="sl">Selected</div></div><div class="stat"><div class="sn gn" id="r-nd">0</div><div class="sl">Added</div></div><div class="stat"><div class="sn og" id="r-ne">0</div><div class="sl">Exists</div></div><div class="stat"><div class="sn rd" id="r-nf">0</div><div class="sl">Failed</div></div></div>
+  <!-- Director filter -->
+  <div class="crow" style="margin-bottom:8px">
+    <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;flex-basis:100%;margin-bottom:4px">Filter by Director</div>
+    <input type="text" id="r-dir-input" placeholder="Type a director name…" style="flex:1;min-width:140px" oninput="dirDebounce()"/>
+    <select id="r-dir-select" onchange="setDirFilter(this.value)" style="min-width:190px"><option value="">— All directors —</option></select>
+    <button class="btn btng" style="font-size:10px;padding:5px 11px" onclick="clearDirFilter()">Clear</button>
+  </div>
+  <div class="crow"><input class="sbox" type="text" id="r-search" placeholder="Search title or genre…" oninput="render('r')"/><button class="btn btnp" id="r-btn" onclick="go('r')" disabled>Import Selected</button><button class="btn btng" onclick="selAll('r')">All</button><button class="btn btng" onclick="desAll('r')">None</button></div>
+  <div class="frow" id="r-chips"></div>
+  <div class="prog" id="r-prog"><div class="pmeta"><span id="r-ptxt">Importing…</span><span id="r-ptimer" class="ptimer"></span><span id="r-ppct">0%</span></div><div class="ptrack"><div class="pfill" id="r-pfill"></div></div><div class="logbox on" id="r-log"></div></div>
+  <div class="tbl"><div class="thead"><div></div><div>Title</div><div>Year</div><div>Genre</div><div>Vibe / Director</div><div>Status</div></div><div class="sarow" onclick="toggleAll('r')"><input type="checkbox" id="r-sa" checked/><span>Select / Deselect All Visible</span></div><div class="tbody" id="r-list"></div></div>
+</div>
+
+<!-- ═══════════════════════ SONARR -->
+<div class="apanel as" id="panel-s">
+  <div class="panel">
+    <div class="slabel">// Sonarr Connection</div>
+    <div class="cgrid">
+      <div class="field"><label>URL</label><input type="text" id="s-url" placeholder="http://192.168.1.x:8989"/></div>
+      <div class="field"><label>API Key</label><input type="password" id="s-key" placeholder="Settings → General → Security"/></div>
+      <button class="btn btnp" onclick="testConn('s')">Test</button>
+    </div>
+    <div class="sbar"><div class="sdot" id="s-dot"></div><span id="s-st" style="font-size:11px;color:var(--muted)">Enter Sonarr URL and API key, then click Test</span></div>
+    <div class="xrow">
+      <label>Monitor:</label>
+      <select id="s-mon"><option value="all">All Seasons</option><option value="future">Future Only</option><option value="missing">Missing Episodes</option><option value="existing">Existing Episodes</option><option value="first">First Season</option><option value="latest">Latest Season</option><option value="none">None</option></select>
+      <label>Search on add:</label>
+      <select id="s-srch"><option value="true">Yes</option><option value="false">No</option></select>
+    </div>
+    <div class="note" style="margin-top:10px">💡 Shows added using your default quality profile and root folder.</div>
+  </div>
+  <div class="panel">
+    <div class="slabel">// Show List — CSV</div>
+    <div class="dz" id="s-dz"><input type="file" accept=".csv" multiple id="s-file" onchange="handleFile('s',event)"/>
+      <div class="dicon">📺</div><div class="dtitle">Drop Shows CSV Here</div>
+      <div class="dsub">or click to browse · <strong style="color:var(--s)">multiple files supported</strong><br>Required: <code>Title</code> &nbsp; Optional: <code>Year</code> <code>TVDB_ID</code> <code>Genre</code> <code>Network</code></div>
+    </div>
+    <div class="lbar" id="s-lbar">
+      <div class="lbar-top">✓ <span id="s-lmsg"></span><button class="btn btng" style="margin-left:auto;padding:3px 10px;font-size:10px" onclick="clearData('s')">Clear All</button></div>
+      <div class="file-pills" id="s-pills"></div>
+    </div>
+    <div class="mapper" id="s-mapper"><div class="slabel" style="margin-bottom:8px">// Map Columns</div><div class="mgrid" id="s-mgrid"></div><button class="btn btnp" style="margin-top:12px" onclick="applyMap('s')">Apply</button></div>
+    <div class="note-row">
+      <div class="note">💡 <code>Title</code> is the only required column — Sonarr will search for everything else automatically. Add <code>Year</code> for more accurate matching. <code>TVDB_ID</code> is optional.</div>
+      <button class="btn btn-push-s" id="s-export-btn" onclick="exportFrom('s')">⬆ Export CSV from Sonarr</button>
+      <button class="btn btn-dl" onclick="downloadTemplate('s')">⬇ Template CSV</button>
+    </div>
+  </div>
+  <div class="stats"><div class="stat"><div class="sn" id="s-nt">0</div><div class="sl">Total</div></div><div class="stat"><div class="sn" id="s-ns">0</div><div class="sl">Selected</div></div><div class="stat"><div class="sn gn" id="s-nd">0</div><div class="sl">Added</div></div><div class="stat"><div class="sn og" id="s-ne">0</div><div class="sl">Exists</div></div><div class="stat"><div class="sn rd" id="s-nf">0</div><div class="sl">Failed</div></div></div>
+  <div class="crow"><input class="sbox" type="text" id="s-search" placeholder="Search…" oninput="render('s')"/><button class="btn btnp" id="s-btn" onclick="go('s')" disabled>Import Selected</button><button class="btn btng" onclick="selAll('s')">All</button><button class="btn btng" onclick="desAll('s')">None</button></div>
+  <div class="frow" id="s-chips"></div>
+  <div class="prog" id="s-prog"><div class="pmeta"><span id="s-ptxt">Importing…</span><span id="s-ptimer" class="ptimer"></span><span id="s-ppct">0%</span></div><div class="ptrack"><div class="pfill" id="s-pfill"></div></div><div class="logbox on" id="s-log"></div></div>
+  <div class="tbl"><div class="thead"><div></div><div>Title</div><div>Year</div><div>Genre</div><div>Network</div><div>Status</div></div><div class="sarow" onclick="toggleAll('s')"><input type="checkbox" id="s-sa" checked/><span>Select / Deselect All Visible</span></div><div class="tbody" id="s-list"></div></div>
+</div>
+
+<!-- ═══════════════════════ PROWLARR -->
+<div class="apanel ap" id="panel-p">
+  <div class="panel">
+    <div class="slabel">// Prowlarr Connection</div>
+    <div class="cgrid">
+      <div class="field"><label>URL</label><input type="text" id="p-url" placeholder="http://192.168.1.x:9696"/></div>
+      <div class="field"><label>API Key</label><input type="password" id="p-key" placeholder="Settings → General → Security"/></div>
+      <button class="btn btnp" onclick="testConn('p')">Test</button>
+    </div>
+    <div class="sbar"><div class="sdot" id="p-dot"></div><span id="p-st" style="font-size:11px;color:var(--muted)">Enter Prowlarr URL and API key, then click Test</span></div>
+  </div>
+
+  <!-- Indexer source -->
+  <div class="panel">
+    <div class="slabel">// Indexer Source</div>
+    <div class="stabs">
+      <button class="stab on" id="p-tb" onclick="switchSrc('p','b')">📡 Built-in List</button>
+      <button class="stab" id="p-tc" onclick="switchSrc('p','c')">📂 Upload CSV</button>
+    </div>
+    <div id="p-src-b">
+      <div class="note" style="margin-bottom:12px">Select indexers to add. Public trackers need no credentials. Private ones need cookies — use the Cookie Manager below.</div>
+      <div style="display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap;">
+        <button class="btn btng" style="font-size:10px;padding:4px 11px" onclick="pSel('all')">All</button>
+        <button class="btn btng" style="font-size:10px;padding:4px 11px" onclick="pSel('none')">None</button>
+        <button class="btn btng" style="font-size:10px;padding:4px 11px" onclick="pSel('pub')">Public Only</button>
+        <button class="btn btng" style="font-size:10px;padding:4px 11px" onclick="pSel('priv')">Private Only</button>
+        <button class="btn btng" style="font-size:10px;padding:4px 11px" onclick="pSel('torrent')">Torrents Only</button>
+        <button class="btn btng" style="font-size:10px;padding:4px 11px" onclick="pSel('usenet')">Usenet Only</button>
+        <button class="btn btng" style="font-size:10px;padding:4px 11px" onclick="pSel('priv-pub-usenet')">Private + Public Usenet</button>
+      </div>
+      <div class="idx-grid" id="p-idxgrid"></div>
+    </div>
+    <div id="p-src-c" style="display:none">
+      <div class="dz" id="p-dz"><input type="file" accept=".csv" multiple id="p-file" onchange="handleFile('p',event)"/>
+        <div class="dicon">📡</div><div class="dtitle">Drop Indexers CSV Here</div>
+        <div class="dsub">or click to browse · <strong style="color:var(--p)">multiple files supported</strong><br>Columns: <code>Name</code> <code>DefinitionName</code> <code>Type</code> <code>Privacy</code></div>
+      </div>
+      <div class="lbar" id="p-lbar">
+        <div class="lbar-top">✓ <span id="p-lmsg"></span><button class="btn btng" style="margin-left:auto;padding:3px 10px;font-size:10px" onclick="clearData('p')">Clear All</button></div>
+        <div class="file-pills" id="p-pills"></div>
+      </div>
+      <div class="mapper" id="p-mapper"><div class="slabel" style="margin-bottom:8px">// Map Columns</div><div class="mgrid" id="p-mgrid"></div><button class="btn btnp" style="margin-top:12px" onclick="applyMap('p')">Apply</button></div>
+      <div class="note-row">
+        <div class="note">💡 <code>DefinitionName</code> is Prowlarr's internal indexer ID e.g. <code>thepiratebay</code>, <code>iptorrents</code>.</div>
+        <button class="btn btn-push-p" id="p-export-btn" onclick="exportFrom('p')">⬆ Export CSV from Prowlarr</button>
+        <button class="btn btn-dl" onclick="downloadTemplate('p')">⬇ Template CSV</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats"><div class="stat"><div class="sn" id="p-nt">0</div><div class="sl">Total</div></div><div class="stat"><div class="sn" id="p-ns">0</div><div class="sl">Selected</div></div><div class="stat"><div class="sn gn" id="p-nd">0</div><div class="sl">Added</div></div><div class="stat"><div class="sn og" id="p-ne">0</div><div class="sl">Exists</div></div><div class="stat"><div class="sn rd" id="p-nf">0</div><div class="sl">Failed</div></div></div>
+  <div class="crow"><button class="btn btnp" id="p-btn" onclick="go('p')" disabled>Add Selected Indexers to Prowlarr</button></div>
+  <div class="prog" id="p-prog"><div class="pmeta"><span id="p-ptxt">Importing…</span><span id="p-ptimer" class="ptimer"></span><span id="p-ppct">0%</span></div><div class="ptrack"><div class="pfill" id="p-pfill"></div></div><div class="logbox on" id="p-log"></div></div>
+
+  <!-- ── PUSH PROWLARR TO RADARR / SONARR ── -->
+  <div class="divider"></div>
+  <div class="push-panel">
+    <div class="slabel">// Push Prowlarr Indexers → Radarr & Sonarr</div>
+    <div class="note" style="margin-bottom:0">Once your indexers are in Prowlarr, use these to push them into Radarr and/or Sonarr automatically so they can search straight away. Fill in the connection details and click Push.</div>
+    <div class="push-grid">
+      <!-- Push → Radarr -->
+      <div class="push-card">
+        <div class="push-card-title rt">🎬 Push → Radarr</div>
+        <div class="push-card-sub">Syncs all Prowlarr indexers into Radarr's indexer list using the Radarr API.</div>
+        <div class="push-fields">
+          <div class="push-field"><label>Radarr URL</label><input type="text" id="pr-url" placeholder="http://192.168.1.x:7878"/></div>
+          <div class="push-field"><label>Radarr API Key</label><input type="password" id="pr-key" placeholder="Settings → General → Security"/></div>
+        </div>
+        <button class="btn btn-push-r" style="width:100%" onclick="pushToArr('r')">Push Prowlarr → Radarr</button>
+        <div class="push-status" id="pr-status"><div class="sdot" id="pr-dot"></div><span id="pr-msg" style="font-size:10px;color:var(--muted)">Not connected</span></div>
+      </div>
+      <!-- Push → Sonarr -->
+      <div class="push-card">
+        <div class="push-card-title st">📺 Push → Sonarr</div>
+        <div class="push-card-sub">Syncs all Prowlarr indexers into Sonarr's indexer list using the Sonarr API.</div>
+        <div class="push-fields">
+          <div class="push-field"><label>Sonarr URL</label><input type="text" id="ps-url" placeholder="http://192.168.1.x:8989"/></div>
+          <div class="push-field"><label>Sonarr API Key</label><input type="password" id="ps-key" placeholder="Settings → General → Security"/></div>
+        </div>
+        <button class="btn btn-push-s" style="width:100%" onclick="pushToArr('s')">Push Prowlarr → Sonarr</button>
+        <div class="push-status" id="ps-status"><div class="sdot" id="ps-dot"></div><span id="ps-msg" style="font-size:10px;color:var(--muted)">Not connected</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── COOKIE MANAGER ── -->
+  <div class="divider"></div>
+  <div class="ck-section">
+    <div class="ck-title-row">
+      <div class="ck-title">🍪 Cookie Manager</div>
+      <div class="ck-sub">Session cookies for private trackers · auto-strips password fields on paste</div>
+    </div>
+    <div class="ck-howto">
+      <div class="ck-howto-title">How to get your session cookie</div>
+      <ol>
+        <li>Log into the tracker in your browser</li>
+        <li>Press <code>F12</code> → Network tab → refresh the page</li>
+        <li>Click any request to that tracker's domain → Headers tab</li>
+        <li>Find <code>Cookie:</code> in Request Headers — copy the entire value</li>
+        <li>Copy the <code>User-Agent:</code> value from the same section</li>
+        <li>Paste both below — password fields like <code>oldpass</code> are stripped automatically</li>
+        <li>Click <strong>Save & Push to Prowlarr</strong> — if Prowlarr is connected it updates instantly</li>
+      </ol>
+    </div>
+    <div class="ck-jump-row">
+      <label>Jump to tracker:</label>
+      <select id="ck-jump" onchange="jumpCk(this.value)"><option value="">— select —</option></select>
+    </div>
+    <div class="ck-grid" id="ck-grid"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ LIDARR -->
+<div class="apanel al" id="panel-l">
+  <div class="panel">
+    <div class="slabel">// Lidarr Connection</div>
+    <div class="cgrid">
+      <div class="field"><label>URL</label><input type="text" id="l-url" placeholder="http://192.168.1.x:8686"/></div>
+      <div class="field"><label>API Key</label><input type="password" id="l-key" placeholder="Settings → General → Security"/></div>
+      <button class="btn btnp" onclick="testConn('l')">Test</button>
+    </div>
+    <div class="sbar"><div class="sdot" id="l-dot"></div><span id="l-st" style="font-size:11px;color:var(--muted)">Enter Lidarr URL and API key, then click Test</span></div>
+    <div class="xrow">
+      <label>Monitor:</label>
+      <select id="l-mon"><option value="all">All Albums</option><option value="future">Future Albums</option><option value="missing">Missing Albums</option><option value="existing">Existing Albums</option><option value="first">First Album</option><option value="latest">Latest Album</option><option value="none">None</option></select>
+      <label>Search on add:</label>
+      <select id="l-srch"><option value="true">Yes</option><option value="false">No</option></select>
+    </div>
+    <div class="note" style="margin-top:10px">💡 Artists added using your default quality and metadata profiles. Searches MusicBrainz for artist info.</div>
+  </div>
+  <div class="panel">
+    <div class="slabel">// Artist List — CSV</div>
+    <div class="dz" id="l-dz"><input type="file" accept=".csv" multiple id="l-file" onchange="handleFile('l',event)"/>
+      <div class="dicon">🎵</div><div class="dtitle">Drop Artists CSV Here</div>
+      <div class="dsub">or click to browse · <strong style="color:var(--l)">multiple files supported</strong><br>Columns: <code>Artist</code> <code>Genre</code> <code>MBID</code> <code>Origin</code></div>
+    </div>
+    <div class="lbar" id="l-lbar">
+      <div class="lbar-top">✓ <span id="l-lmsg"></span><button class="btn btng" style="margin-left:auto;padding:3px 10px;font-size:10px" onclick="clearData('l')">Clear All</button></div>
+      <div class="file-pills" id="l-pills"></div>
+    </div>
+    <div class="mapper" id="l-mapper"><div class="slabel" style="margin-bottom:8px">// Map Columns</div><div class="mgrid" id="l-mgrid"></div><button class="btn btnp" style="margin-top:12px" onclick="applyMap('l')">Apply</button></div>
+    <div class="note-row">
+      <div class="note">💡 <code>MBID</code> (MusicBrainz ID) gives the most accurate results. Without it, Lidarr searches by artist name automatically.</div>
+      <button class="btn btn-push-l" id="l-export-btn" onclick="exportFrom('l')">⬆ Export CSV from Lidarr</button>
+      <button class="btn btn-dl" onclick="downloadTemplate('l')">⬇ Template CSV</button>
+    </div>
+  </div>
+  <div class="stats"><div class="stat"><div class="sn" id="l-nt">0</div><div class="sl">Total</div></div><div class="stat"><div class="sn" id="l-ns">0</div><div class="sl">Selected</div></div><div class="stat"><div class="sn gn" id="l-nd">0</div><div class="sl">Added</div></div><div class="stat"><div class="sn og" id="l-ne">0</div><div class="sl">Exists</div></div><div class="stat"><div class="sn rd" id="l-nf">0</div><div class="sl">Failed</div></div></div>
+  <div class="crow"><input class="sbox" type="text" id="l-search" placeholder="Search artists…" oninput="render('l')"/><button class="btn btnp" id="l-btn" onclick="go('l')" disabled>Import Selected</button><button class="btn btng" onclick="selAll('l')">All</button><button class="btn btng" onclick="desAll('l')">None</button></div>
+  <div class="frow" id="l-chips"></div>
+  <div class="prog" id="l-prog"><div class="pmeta"><span id="l-ptxt">Importing…</span><span id="l-ptimer" class="ptimer"></span><span id="l-ppct">0%</span></div><div class="ptrack"><div class="pfill" id="l-pfill"></div></div><div class="logbox on" id="l-log"></div></div>
+  <div class="tbl"><div class="thead"><div></div><div>Artist</div><div>—</div><div>Genre</div><div>Origin</div><div>Status</div></div><div class="sarow" onclick="toggleAll('l')"><input type="checkbox" id="l-sa" checked/><span>Select / Deselect All Visible</span></div><div class="tbody" id="l-list"></div></div>
+</div>
+
+</div>
+<script>
+// ─────────────────────────────────────
+// PROWLARR INDEXER DATA
+// ─────────────────────────────────────
+const INDEXERS=[
+  // Public Torrent
+  {name:"The Pirate Bay",def:"thepiratebay",type:"torrent",priv:"public",cat:"General"},
+  {name:"YTS",def:"yts",type:"torrent",priv:"public",cat:"Movies"},
+  {name:"Nyaa.si",def:"nyaasi",type:"torrent",priv:"public",cat:"Anime"},
+  {name:"LimeTorrents",def:"limetorrents",type:"torrent",priv:"public",cat:"General"},
+  {name:"Torrent9",def:"torrent9",type:"torrent",priv:"public",cat:"General"},
+  // Private Torrent - cookie auth
+  {name:"IPTorrents",def:"iptorrents",type:"torrent",priv:"private",cat:"General",ck:true,authType:"cookie"},
+  {name:"TorrentLeech",def:"torrentleech",type:"torrent",priv:"private",cat:"General",ck:true,authType:"cookie"},
+  {name:"HDBits",def:"hdbits",type:"torrent",priv:"private",cat:"Movies/TV",ck:true,authType:"cookie"},
+  {name:"AvistaZ",def:"avistaz",type:"torrent",priv:"private",cat:"Movies/TV",ck:true,authType:"cookie"},
+  {name:"CinemaZ",def:"cinemaz",type:"torrent",priv:"private",cat:"Movies",ck:true,authType:"cookie"},
+  {name:"HD-Space",def:"hdspace",type:"torrent",priv:"private",cat:"Movies/TV",ck:true,authType:"cookie"},
+  {name:"HD-Torrents",def:"hdtorrents",type:"torrent",priv:"private",cat:"Movies/TV",ck:true,authType:"cookie"},
+  {name:"AlphaRatio",def:"alpharatio",type:"torrent",priv:"private",cat:"General",ck:true,authType:"cookie"},
+  {name:"AnimeBytes",def:"animebytes",type:"torrent",priv:"private",cat:"Anime",ck:true,authType:"cookie"},
+  {name:"TorrentDay",def:"torrentday",type:"torrent",priv:"private",cat:"General",ck:true,authType:"cookie"},
+  {name:"SceneTime",def:"scenetime",type:"torrent",priv:"private",cat:"General",ck:true,authType:"cookie"},
+  {name:"FileList",def:"filelist",type:"torrent",priv:"private",cat:"General",ck:true,authType:"cookie"},
+  {name:"Blutopia",def:"blutopia",type:"torrent",priv:"private",cat:"Movies/TV",ck:true,authType:"cookie"},
+  {name:"Nebulance",def:"nebulance",type:"torrent",priv:"private",cat:"TV",ck:true,authType:"apikey",apiKeyField:"apikey"},
+  // Private Torrent - API key auth
+  {name:"PassThePopcorn",def:"passthepopcorn",type:"torrent",priv:"private",cat:"Movies",ck:true,authType:"apikey",apiUserField:"APIUser",apiKeyField:"APIKey"},
+  {name:"BroadcasTheNet (BTN)",def:"broadcasthenet",type:"torrent",priv:"private",cat:"TV",ck:true,authType:"apikey",apiKeyField:"ApiKey"},
+  {name:"MoreThanTV (MTV)",def:"morethantv",type:"torrent",priv:"private",cat:"TV",ck:true,authType:"apikey",apiKeyField:"ApiKey"},
+  {name:"BeyondHD",def:"beyondhd",type:"torrent",priv:"private",cat:"Movies/TV",ck:true,authType:"apikey",apiKeyField:"ApiKey",rssKeyField:"RssKey"},
+  {name:"Redacted (Music)",def:"redacted",type:"torrent",priv:"private",cat:"Music",ck:true,authType:"apikey",apiKeyField:"Apikey"},
+  {name:"Orpheus (Music)",def:"orpheus",type:"torrent",priv:"private",cat:"Music",ck:true,authType:"apikey",apiKeyField:"Apikey"},
+  {name:"TorrentLeech (API)",def:"torrentleech",type:"torrent",priv:"private",cat:"General",ck:true,authType:"userpass"},
+  // Usenet - need redirect:true
+  {name:"NZBGeek",def:"nzbgeek",type:"usenet",priv:"private",cat:"General",redirect:true},
+  {name:"DogNZB",def:"dognzb",type:"usenet",priv:"private",cat:"General",redirect:true},
+  {name:"NZBFinder",def:"nzbfinder",type:"usenet",priv:"private",cat:"General",redirect:true},
+  {name:"NZBPlanet",def:"nzbplanet",type:"usenet",priv:"private",cat:"General",redirect:true},
+  {name:"Althub",def:"althub",type:"usenet",priv:"private",cat:"General",redirect:true},
+  {name:"Usenet Crawler",def:"usenetcrawler",type:"usenet",priv:"private",cat:"General",redirect:true},
+];
+
+// ─────────────────────────────────────
+// TEMPLATE CSV DEFINITIONS
+// ─────────────────────────────────────
+const TEMPLATES={
+  r:{
+    filename:'radarr_movies_template.csv',
+    headers:['Title','Year','TMDB_ID','Genre','Vibe','Director'],
+    rows:[
+      ['The Dark Knight','2008','155','Action/Drama','Blockbuster Hit','Christopher Nolan'],
+      ['Spirited Away','2001','129','Anime/Fantasy','Award Winner','Hayao Miyazaki'],
+      ['Parasite','2019','496243','Drama/Thriller','Award Winner','Bong Joon-ho'],
+      ['Everything Everywhere All at Once','2022','545611','Comedy/Sci-Fi','Award Winner','Daniel Kwan'],
+      ['Dune: Part Two','2024','693134','Sci-Fi','Blockbuster Hit','Denis Villeneuve'],
+    ]
+  },
+  s:{
+    filename:'sonarr_shows_template.csv',
+    headers:['Title','Year','TVDB_ID','Genre','Network'],
+    rows:[
+      ['Breaking Bad','2008','81189','Drama','AMC'],
+      ['The Bear','2022','392462','Drama/Comedy','FX'],
+      ['Shogun','2024','392572','Drama','FX'],
+      ['Severance','2022','371980','Sci-Fi/Drama','Apple TV+'],
+      ['The Last of Us','2023','392367','Drama/Horror','HBO'],
+    ]
+  },
+  p:{
+    filename:'prowlarr_indexers_template.csv',
+    headers:['Name','DefinitionName','Type','Privacy'],
+    rows:[
+      ['The Pirate Bay','thepiratebay','torrent','public'],
+      ['1337x','1337x','torrent','public'],
+      ['YTS','yts','torrent','public'],
+      ['IPTorrents','iptorrents','torrent','private'],
+      ['NZBGeek','nzbgeek','usenet','private'],
+    ]
+  },
+  l:{
+    filename:'lidarr_artists_template.csv',
+    headers:['Artist','Genre','MBID','Origin'],
+    rows:[
+      ['Taylor Swift','Pop','20244d07-534f-4eff-b4d4-930878889970','USA'],
+      ['Kendrick Lamar','Hip-Hop','381086ea-f511-4aba-bdf9-71c753dc5077','USA'],
+      ['Daft Punk','Electronic','056e4f3e-d505-4dad-8ec1-d04f521cbb56','France'],
+      ['Arctic Monkeys','Indie Rock','ada7a83c-e3e1-40f1-93f9-3e73dbc9298a','UK'],
+      ['Billie Eilish','Pop','','USA'],
+    ]
+  }
+};
+
+function downloadTemplate(p){
+  const t=TEMPLATES[p];
+  const rows=[t.headers,...t.rows];
+  const csv=rows.map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=t.filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ─────────────────────────────────────
+// EXPORT CSV FROM SERVICE
+// ─────────────────────────────────────
+async function exportFrom(p){
+  const url=document.getElementById(`${p}-url`).value.trim().replace(/\/$/,'');
+  const key=document.getElementById(`${p}-key`).value.trim();
+  const btn=document.getElementById(`${p}-export-btn`);
+  const names={r:'Radarr',s:'Sonarr',p:'Prowlarr',l:'Lidarr'};
+  const svcName=names[p];
+  if(!url||!key){alert(`Connect to ${svcName} first — enter the URL and API key above and click Test.`);return;}
+  btn.textContent='⏳ Fetching…';btn.disabled=true;
+  try{
+    let csv='',count=0,filename='';
+    if(p==='r'){
+      const res=await fetch(`${url}/api/v3/movie`,{headers:{'X-Api-Key':key}});
+      if(!res.ok)throw new Error(`HTTP ${res.status}`);
+      const data=await res.json();
+      count=data.length;
+      if(!count){alert('No movies found in Radarr.');btn.textContent='⬆ Export CSV from Radarr';btn.disabled=false;return;}
+      const rows=data.sort((a,b)=>(a.title||'').localeCompare(b.title||'')).map(m=>[m.title||'',m.year||'',m.tmdbId||'',(m.genres||[]).join('/'),m.status||'']);
+      csv=[['Title','Year','TMDB_ID','Genre','Status'],...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+      filename=`radarr_export_${count}_movies.csv`;
+    } else if(p==='s'){
+      const res=await fetch(`${url}/api/v3/series`,{headers:{'X-Api-Key':key}});
+      if(!res.ok)throw new Error(`HTTP ${res.status}`);
+      const data=await res.json();
+      count=data.length;
+      if(!count){alert('No shows found in Sonarr.');btn.textContent='⬆ Export CSV from Sonarr';btn.disabled=false;return;}
+      const rows=data.sort((a,b)=>(a.title||'').localeCompare(b.title||'')).map(s=>[s.title||'',s.year||'',s.tvdbId||'',(s.genres||[]).join('/'),s.network||'',s.status||'']);
+      csv=[['Title','Year','TVDB_ID','Genre','Network','Status'],...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+      filename=`sonarr_export_${count}_shows.csv`;
+    } else if(p==='p'){
+      const res=await fetch(`${url}/api/v1/indexer`,{headers:{'X-Api-Key':key}});
+      if(!res.ok)throw new Error(`HTTP ${res.status}`);
+      const data=await res.json();
+      count=data.length;
+      if(!count){alert('No indexers found in Prowlarr.');btn.textContent='⬆ Export CSV from Prowlarr';btn.disabled=false;return;}
+      const rows=data.sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(i=>[i.name||'',i.definitionName||'',i.protocol||'',i.privacy||'',i.enable?'enabled':'disabled']);
+      csv=[['Name','DefinitionName','Type','Privacy','Status'],...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+      filename=`prowlarr_export_${count}_indexers.csv`;
+    } else if(p==='l'){
+      const res=await fetch(`${url}/api/v1/artist`,{headers:{'X-Api-Key':key}});
+      if(!res.ok)throw new Error(`HTTP ${res.status}`);
+      const data=await res.json();
+      count=data.length;
+      if(!count){alert('No artists found in Lidarr.');btn.textContent='⬆ Export CSV from Lidarr';btn.disabled=false;return;}
+      const rows=data.sort((a,b)=>(a.artistName||'').localeCompare(b.artistName||'')).map(a=>[a.artistName||'',((a.genres||[])[0])||'',(a.foreignArtistId||''),(a.status||'')]);
+      csv=[['Artist','Genre','MBID','Status'],...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+      filename=`lidarr_export_${count}_artists.csv`;
+    }
+    const blob=new Blob([csv],{type:'text/csv'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;a.click();URL.revokeObjectURL(a.href);
+    btn.textContent=`✓ Exported ${count} items`;
+    setTimeout(()=>{btn.textContent=`⬆ Export CSV from ${svcName}`;btn.disabled=false;},3000);
+  }catch(e){
+    alert(`Export failed: ${e.message}`);
+    btn.textContent=`⬆ Export CSV from ${svcName}`;btn.disabled=false;
+  }
+}
+
+
+// ─────────────────────────────────────
+// STATE
+// ─────────────────────────────────────
+const S={
+  r:{items:[],filter:'All',qualityId:null,rootFolder:null,importing:false,headers:[],rawRows:[],loadedFiles:[]},
+  s:{items:[],filter:'All',qualityId:null,rootFolder:null,importing:false,headers:[],rawRows:[],loadedFiles:[]},
+  p:{items:[],importing:false,headers:[],rawRows:[],src:'b',appProfileId:1,loadedFiles:[]},
+  l:{items:[],filter:'All',qualityId:null,rootFolder:null,metaId:null,importing:false,headers:[],rawRows:[],loadedFiles:[]},
+};
+const cookieStore={};
+let activeDirFilter=null;
+let dirTimer=null;
+
+// ─────────────────────────────────────
+// APP SWITCH
+// ─────────────────────────────────────
+function switchApp(a){
+  ['r','s','p','l'].forEach(x=>{
+    document.getElementById(`panel-${x}`).classList.toggle('active',x===a);
+    document.querySelector(`.t${x}`).classList.toggle('active',x===a);
+  });
+}
+
+// ─────────────────────────────────────
+// PROWLARR SOURCE SWITCH
+// ─────────────────────────────────────
+function switchSrc(p,s){
+  S[p].src=s;
+  document.getElementById(`${p}-tb`)?.classList.toggle('on',s==='b');
+  document.getElementById(`${p}-tc`)?.classList.toggle('on',s==='c');
+  if(p==='p'){
+    document.getElementById('p-src-b').style.display=s==='b'?'block':'none';
+    document.getElementById('p-src-c').style.display=s==='c'?'block':'none';
+    if(s==='b')initPGrid();
+  }
+}
+
+// ─────────────────────────────────────
+// PROWLARR GRID
+// ─────────────────────────────────────
+function initPGrid(){
+  S.p.items=INDEXERS.map((x,i)=>({...x,id:i,selected:true,status:'queued'}));
+  renderPGrid();updateStats('p');
+}
+
+function renderPGrid(){
+  const g=document.getElementById('p-idxgrid');if(!g)return;
+  g.innerHTML=S.p.items.map(m=>`
+    <div class="idx-card ${m.selected?'sel':''}" onclick="toggleP(${m.id})">
+      <input type="checkbox" ${m.selected?'checked':''} onclick="event.stopPropagation();toggleP(${m.id})"/>
+      <div class="idx-info">
+        <div class="idx-name">${m.name}</div>
+        <div class="idx-meta">
+          <span class="ibadge ${m.type}">${m.type}</span>
+          <span class="ibadge ${m.priv==='public'?'pub':'priv'}">${m.priv}</span>
+          <span>${m.cat}</span>
+          ${m.ck?'<span style="color:var(--warn);font-size:9px">🍪</span>':''}
+        </div>
+      </div>
+      <div class="idx-dot ${m.status==='success'?'ok':m.status==='failed'?'er':m.status==='exists'?'wn':m.status==='importing'?'spin':''}"></div>
+    </div>`).join('');
+  updateStats('p');
+}
+
+function toggleP(id){if(S.p.importing)return;const m=S.p.items.find(x=>x.id===id);if(m){m.selected=!m.selected;renderPGrid();}}
+
+
+// Keep old pSel for any legacy calls
+function pSel(t){
+  S.p.items.forEach(m=>{
+    if(t==='all')m.selected=true;
+    else if(t==='none')m.selected=false;
+    else if(t==='pub')m.selected=m.priv==='public';
+    else if(t==='priv')m.selected=m.priv==='private';
+    else if(t==='torrent')m.selected=m.type==='torrent';
+    else if(t==='usenet')m.selected=m.type==='usenet';
+    else if(t==='priv-pub-usenet')m.selected=(m.priv==='private')||(m.type==='usenet'&&m.priv==='public');
+  });
+  renderPGrid();
+}
+
+// ─────────────────────────────────────
+// COOKIE MANAGER
+// ─────────────────────────────────────
+function initCookieManager(){
+  const privs=INDEXERS.filter(x=>x.ck);
+  const jump=document.getElementById('ck-jump');
+  jump.innerHTML='<option value="">— select —</option>'+privs.map(t=>`<option value="${t.def}">${t.name}</option>`).join('');
+  document.getElementById('ck-grid').innerHTML=privs.map(t=>`
+    <div class="ck-card" id="ck-${t.def}">
+      <div class="ck-head">
+        <span>🔒</span>
+        <div>
+          <div class="ck-card-name">${t.name}</div>
+          <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted)">${t.cat} · ${t.type}</div>
+        </div>
+        <div class="ck-card-def">${t.def}</div>
+      </div>
+      <div class="ck-body">
+        ${t.authType==='apikey'?`
+        <div class="ck-field">
+          <label>API Key</label>
+          <input type="text" id="ck-apikey-${t.def}" placeholder="Your API key for ${t.name}…"/>
+        </div>
+        ${t.apiUserField?`<div class="ck-field"><label>API Username</label><input type="text" id="ck-apiuser-${t.def}" placeholder="Your API username…"/></div>`:''}
+        ${t.rssKeyField?`<div class="ck-field"><label>RSS Key</label><input type="text" id="ck-rsskey-${t.def}" placeholder="Your RSS key…"/></div>`:''}
+        `:`
+        <div class="ck-field">
+          <label>Session Cookie</label>
+          <textarea id="ck-c-${t.def}" rows="3" placeholder="Paste full cookie string here…"></textarea>
+          <div class="ck-strip-note" id="ck-sn-${t.def}">✓ Password fields stripped automatically</div>
+        </div>
+        <div class="ck-field">
+          <label>User-Agent</label>
+          <input type="text" id="ck-ua-${t.def}" placeholder="Mozilla/5.0 (Windows NT 10.0; Win64; x64)…"/>
+        </div>
+        `}
+        <div class="ck-actions">
+          <button class="btn btn-push-p" style="font-size:10px;padding:5px 13px" onclick="saveCookie('${t.def}','${t.name}')">Save & Push to Prowlarr</button>
+          <button class="btn btng" style="font-size:10px;padding:5px 11px" onclick="clearCookie('${t.def}')">Clear</button>
+          <span class="ck-saved-badge">✓ saved</span>
+        </div>
+      </div>
+    </div>`).join('');
+  // Attach auto-strip listeners (only for cookie auth cards)
+  privs.forEach(t=>{
+    if(t.authType==='apikey')return; // no stripping needed for API key fields
+    const ta=document.getElementById(`ck-c-${t.def}`);
+    if(!ta)return;
+    const strip=()=>{
+      const raw=ta.value;
+      const cleaned=raw.split(';').map(s=>s.trim()).filter(s=>{
+        const k=s.split('=')[0].trim().toLowerCase();
+        return!['oldpass','old_pass','password','passwd','pwd','pass'].includes(k);
+      }).join('; ');
+      if(cleaned!==raw){
+        ta.value=cleaned;
+        const sn=document.getElementById(`ck-sn-${t.def}`);
+        if(sn){sn.classList.add('on');setTimeout(()=>sn.classList.remove('on'),3000);}
+      }
+    };
+    ta.addEventListener('input',strip);
+    ta.addEventListener('paste',()=>setTimeout(strip,10));
+  });
+}
+
+function jumpCk(def){
+  if(!def)return;
+  const el=document.getElementById(`ck-${def}`);
+  if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.style.outline='2px solid var(--p)';setTimeout(()=>el.style.outline='',1500);}
+}
+
+async function saveCookie(def,name){
+  // Support both cookie auth and API key auth
+  const cookieEl=document.getElementById(`ck-c-${def}`);
+  const apiKeyEl=document.getElementById(`ck-apikey-${def}`);
+  const apiUserEl=document.getElementById(`ck-apiuser-${def}`);
+  const rssKeyEl=document.getElementById(`ck-rsskey-${def}`);
+  const ua=document.getElementById(`ck-ua-${def}`)?.value.trim()||'';
+
+  if(apiKeyEl){
+    const apiKey=apiKeyEl.value.trim();
+    if(!apiKey){alert('Enter the API key first.');return;}
+    const apiUser=apiUserEl?.value.trim()||'';
+    const rssKey=rssKeyEl?.value.trim()||'';
+    cookieStore[def]={apiKey,apiUser,rssKey,userAgent:ua,authType:'apikey'};
+  } else {
+    const cookie=cookieEl?.value.trim()||'';
+    if(!cookie){alert('Paste the cookie value first.');return;}
+    cookieStore[def]={cookie,userAgent:ua,authType:'cookie'};
+  }
+  document.getElementById(`ck-${def}`).classList.add('saved');
+  const url=document.getElementById('p-url').value.trim().replace(/\/$/,'');
+  const key=document.getElementById('p-key').value.trim();
+  if(!url||!key){addLog('p',`🍪 Cookie saved for ${name} — connect Prowlarr to push automatically`,'wn');return;}
+  addLog('p',`🔄 Pushing cookie to Prowlarr for ${name}…`);
+  try{
+    const r=await fetch(`${url}/api/v1/indexer`,{headers:{'X-Api-Key':key}});
+    if(!r.ok)throw new Error(`HTTP ${r.status}`);
+    const list=await r.json();
+    const ex=list.find(i=>i.definitionName===def||i.name.toLowerCase()===name.toLowerCase());
+    if(!ex){addLog('p',`⚠ ${name} not in Prowlarr yet — add it first then re-save cookie`,'wn');return;}
+    const fields=ex.fields.map(f=>{
+      if(f.name==='cookie'||f.name==='cookieHeader')return{...f,value:cookie};
+      if((f.name==='useragent'||f.name==='browserUserAgent')&&ua)return{...f,value:ua};
+      return f;
+    });
+    if(!fields.some(f=>f.name==='cookie'||f.name==='cookieHeader'))fields.push({name:'cookie',value:cookie});
+    if(ua&&!fields.some(f=>f.name==='useragent'||f.name==='browserUserAgent'))fields.push({name:'useragent',value:ua});
+    const pr=await fetch(`${url}/api/v1/indexer/${ex.id}`,{method:'PUT',headers:{'X-Api-Key':key,'Content-Type':'application/json'},body:JSON.stringify({...ex,fields})});
+    if(pr.ok)addLog('p',`✓ Cookie pushed for ${name}`,'ok');
+    else{const e=await pr.json();addLog('p',`✗ Push failed for ${name}: ${JSON.stringify(e)}`,'er');}
+  }catch(e){addLog('p',`✗ Error for ${name}: ${e.message}`,'er');}
+}
+
+function clearCookie(def){
+  const cookieEl=document.getElementById(`ck-c-${def}`);
+  const apiKeyEl=document.getElementById(`ck-apikey-${def}`);
+  const uaEl=document.getElementById(`ck-ua-${def}`);
+  if(cookieEl)cookieEl.value='';
+  if(apiKeyEl)apiKeyEl.value='';
+  if(uaEl)uaEl.value='';
+  const apiUserEl=document.getElementById(`ck-apiuser-${def}`);
+  const rssKeyEl=document.getElementById(`ck-rsskey-${def}`);
+  if(apiUserEl)apiUserEl.value='';
+  if(rssKeyEl)rssKeyEl.value='';
+  delete cookieStore[def];
+  document.getElementById(`ck-${def}`).classList.remove('saved');
+}
+
+// ─────────────────────────────────────
+// PUSH PROWLARR → RADARR / SONARR
+// ─────────────────────────────────────
+async function pushToArr(target){
+  const prowlarrUrl=document.getElementById('p-url').value.trim().replace(/\/$/,'');
+  const prowlarrKey=document.getElementById('p-key').value.trim();
+  const arrUrl=document.getElementById(`p${target}-url`).value.trim().replace(/\/$/,'');
+  const arrKey=document.getElementById(`p${target}-key`).value.trim();
+  const dotEl=document.getElementById(`p${target}-dot`);
+  const msgEl=document.getElementById(`p${target}-msg`);
+  const appName=target==='r'?'Radarr':'Sonarr';
+
+  if(!prowlarrUrl||!prowlarrKey){setPushStatus(target,'err',`Enter Prowlarr URL + API key first`);return;}
+  if(!arrUrl||!arrKey){setPushStatus(target,'err',`Enter ${appName} URL + API key`);return;}
+
+  setPushStatus(target,'spin',`Connecting to Prowlarr…`);
+  try{
+    // 1. Get all indexers from Prowlarr
+    const pr=await fetch(`${prowlarrUrl}/api/v1/indexer`,{headers:{'X-Api-Key':prowlarrKey}});
+    if(!pr.ok)throw new Error(`Prowlarr HTTP ${pr.status}`);
+    const prowlarrIndexers=await pr.json();
+    if(!prowlarrIndexers.length){setPushStatus(target,'wn','No indexers found in Prowlarr');return;}
+
+    setPushStatus(target,'spin',`Connecting to ${appName}…`);
+
+    // 2. Get Prowlarr system status to get its own URL that Radarr/Sonarr will connect to
+    const pSys=await fetch(`${prowlarrUrl}/api/v1/system/status`,{headers:{'X-Api-Key':prowlarrKey}});
+    const pSysData=await pSys.json();
+
+    // 3. Check if Prowlarr sync is already set up in target app
+    const apiVer=target==='r'?'v3':'v3';
+    const existingR=await fetch(`${arrUrl}/api/${apiVer}/indexer`,{headers:{'X-Api-Key':arrKey}});
+    if(!existingR.ok)throw new Error(`${appName} HTTP ${existingR.status}`);
+    const existingIndexers=await existingR.json();
+
+    // 4. Check if a Prowlarr-sync indexer already exists
+    const prowlarrSyncExists=existingIndexers.some(i=>
+      i.implementation==='Newznab'&&i.fields?.some(f=>f.name==='baseUrl'&&f.value?.includes(prowlarrUrl.replace(/https?:\/\//,'')))
+    );
+
+    let added=0,skipped=0;
+    // 5. Add each Prowlarr indexer as a Newznab/Torznab entry in the target app
+    for(const idx of prowlarrIndexers.slice(0,prowlarrIndexers.length)){
+      const isUsenet=idx.protocol==='usenet';
+      const impl=isUsenet?'Newznab':'Torznab';
+      const conf=isUsenet?'NewznabSettings':'TorznabSettings';
+      const apiPath=isUsenet?'/api/v1/indexer':'/api/v1/indexer';
+      const apiUrl=`${prowlarrUrl}/${idx.id}/api`;
+
+      // Check if already exists in target
+      const alreadyThere=existingIndexers.some(i=>
+        i.fields?.some(f=>f.name==='baseUrl'&&(f.value===apiUrl||f.value?.includes(`/${idx.id}/`)))
+      );
+      if(alreadyThere){skipped++;continue;}
+
+      const body={
+        name:`${idx.name} (Prowlarr)`,
+        implementation:impl,
+        configContract:conf,
+        enable:true,
+        priority:25,
+        tags:[],
+        fields:[
+          {name:'baseUrl',value:apiUrl},
+          {name:'apiPath',value:'/api'},
+          {name:'apiKey',value:prowlarrKey},
+          {name:'categories',value:isUsenet?[2000,2010,2020,2030,2035,2040,2045,2050,2060]:[2000,2010,2020,2030,2035,2040,2045,2050,2060,5000,5010,5020,5030,5040,5045,5050,5070,5080]},
+          {name:'animeCategories',value:[]},
+        ]
+      };
+      const res=await fetch(`${arrUrl}/api/v3/indexer`,{method:'POST',headers:{'X-Api-Key':arrKey,'Content-Type':'application/json'},body:JSON.stringify(body)});
+      if(res.status===201||res.ok)added++;
+      else skipped++;
+      await new Promise(r=>setTimeout(r,150));
+    }
+    setPushStatus(target,'ok',`✓ Done — ${added} added, ${skipped} skipped/exists`);
+    addLog('p',`✓ Pushed ${added} indexers to ${appName} (${skipped} skipped)`,'ok');
+  }catch(e){
+    setPushStatus(target,'err',`Failed: ${e.message}`);
+    addLog('p',`✗ Push to ${appName} failed: ${e.message}`,'er');
+  }
+}
+
+function setPushStatus(target,type,msg){
+  const dot=document.getElementById(`p${target}-dot`);
+  const txt=document.getElementById(`p${target}-msg`);
+  dot.className='sdot '+(type==='spin'?'spin':type==='ok'?'ok':type==='err'?'err':'');
+  txt.textContent=msg;
+  txt.style.color=type==='err'?'var(--err)':type==='ok'?'var(--ok)':type==='wn'?'var(--warn)':'var(--muted)';
+}
+
+// ─────────────────────────────────────
+// ─────────────────────────────────────
+// CSV
+// ─────────────────────────────────────
+function handleFile(p,e){
+  const files=Array.from(e.target.files);if(!files.length)return;
+  loadFiles(p,files);
+  e.target.value='';
+}
+
+function loadFiles(p,files){
+  let loaded=0;
+  const results=new Array(files.length);
+  files.forEach((file,idx)=>{
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      results[idx]={text:ev.target.result,name:file.name};
+      if(++loaded===files.length)stackCSVFiles(p,results);
+    };
+    reader.readAsText(file);
+  });
+}
+
+function parseOneFile(p,text,name){
+  const lines=text.trim().split(/\r?\n/).filter(l=>l.trim());
+  if(lines.length<2)return null;
+  const headers=split(lines[0]).map(h=>h.trim().replace(/^"|"$/g,''));
+  const rawRows=lines.slice(1).map(l=>split(l).map(v=>v.trim().replace(/^"|"$/g,'')));
+  const lh=headers.map(h=>h.toLowerCase());
+  let tc,yc,idc,gc,vc,dc;
+  if(p==='p'){tc=lh.findIndex(h=>h.includes('name'));idc=lh.findIndex(h=>h.includes('def'));gc=lh.findIndex(h=>h.includes('type'));vc=lh.findIndex(h=>h.includes('priv'));yc=-1;dc=-1;}
+  else if(p==='l'){tc=lh.findIndex(h=>h.includes('artist')||h.includes('name'));gc=lh.findIndex(h=>h.includes('genre'));vc=lh.findIndex(h=>h.includes('origin')||h.includes('country'));idc=lh.findIndex(h=>h.includes('mbid'));yc=-1;dc=-1;}
+  else{tc=lh.findIndex(h=>['title','name','movie','show','series'].some(k=>h.includes(k)));yc=lh.findIndex(h=>h.includes('year'));idc=lh.findIndex(h=>h.includes('tmdb')||h.includes('tvdb')||h==='id');gc=lh.findIndex(h=>h.includes('genre'));vc=lh.findIndex(h=>['vibe','network','type','category'].some(k=>h.includes(k)));dc=p==='r'?lh.findIndex(h=>h.includes('director')):-1;}
+  if(tc===-1)return null;
+  const items=rawRows.filter(row=>row[tc]?.trim()).map(row=>({
+    title:row[tc]||'',name:row[tc]||'',
+    year:yc>=0?parseInt(row[yc])||null:null,
+    tmdb:idc>=0?row[idc]||null:null,
+    genre:gc>=0?row[gc]||'':'',
+    vibe:vc>=0?row[vc]||'':'',
+    director:dc>=0?row[dc]||'':'',
+    def:p==='p'&&idc>=0?row[idc]||'':'',
+    selected:true,status:'queued'
+  }));
+  return {name,items};
+}
+
+function stackCSVFiles(p,results){
+  let added=0,skipped=[];
+  for(const {text,name} of results){
+    const parsed=parseOneFile(p,text,name);
+    if(!parsed){skipped.push(name);continue;}
+    const fileId=Date.now()+'_'+Math.random().toString(36).slice(2);
+    const tagged=parsed.items.map(item=>({...item,_src:fileId}));
+    S[p].loadedFiles.push({id:fileId,name,count:tagged.length});
+    S[p].items=S[p].items.concat(tagged);
+    added+=tagged.length;
+  }
+  if(skipped.length)alert('Could not detect title column in:\n'+skipped.join('\n')+'\nThese files were skipped.');
+  if(added===0)return;
+  reindexItems(p);
+  refreshAfterLoad(p);
+}
+
+function reindexItems(p){
+  S[p].items=S[p].items.map((item,i)=>({...item,id:i}));
+}
+
+function refreshAfterLoad(p){
+  const lbar=document.getElementById(`${p}-lbar`);
+  if(lbar)lbar.classList.toggle('on',S[p].items.length>0);
+  const lm=document.getElementById(`${p}-lmsg`);
+  if(lm)lm.textContent=`${S[p].items.length} items loaded`;
+  renderPills(p);
+  document.getElementById(`${p}-mapper`)?.classList.remove('on');
+  S[p].filter='All';
+  if(p==='p'){renderPGrid();updateStats('p');}
+  else{
+    buildChips(p);render(p);
+    if(p==='r'){
+      const dirs=[...new Set(S.r.items.map(m=>m.director).filter(Boolean))].sort();
+      const sel=document.getElementById('r-dir-select');
+      sel.innerHTML='<option value="">— All directors —</option>'+dirs.map(d=>`<option value="${d}">${d}</option>`).join('');
+    }
+  }
+}
+
+function renderPills(p){
+  const container=document.getElementById(`${p}-pills`);if(!container)return;
+  container.innerHTML=S[p].loadedFiles.map(f=>`
+    <div class="fpill">
+      \u{1F4C4} ${escHtml(f.name)} <span style="opacity:.5">(${f.count})</span>
+      <button class="fpill-x" title="Remove this file" onclick="removeFile('${p}','${f.id}')">&#x2715;</button>
+    </div>`).join('');
+}
+
+function removeFile(p,fileId){
+  S[p].items=S[p].items.filter(item=>item._src!==fileId);
+  S[p].loadedFiles=S[p].loadedFiles.filter(f=>f.id!==fileId);
+  reindexItems(p);
+  if(S[p].items.length===0){
+    document.getElementById(`${p}-lbar`)?.classList.remove('on');
+    renderPills(p);
+    if(p==='p'){renderPGrid();updateStats('p');}else{buildChips(p);render(p);}
+  } else {
+    refreshAfterLoad(p);
+  }
+}
+
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+['r','s','p','l'].forEach(p=>{
+  const dz=document.getElementById(`${p}-dz`);if(!dz)return;
+  dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('ov');});
+  dz.addEventListener('dragleave',()=>dz.classList.remove('ov'));
+  dz.addEventListener('drop',e=>{
+    e.preventDefault();dz.classList.remove('ov');
+    const files=Array.from(e.dataTransfer.files).filter(f=>f.name.endsWith('.csv'));
+    if(files.length)loadFiles(p,files);
+  });
+});
+
+function split(line){
+  const res=[];let cur='',inQ=false;
+  for(let i=0;i<line.length;i++){if(line[i]==='"')inQ=!inQ;else if(line[i]===','&&!inQ){res.push(cur);cur='';}else cur+=line[i];}
+  res.push(cur);return res;
+}
+
+// Legacy parseCSV kept for mapper fallback path
+function parseCSV(p,text,filename){
+  const lines=text.trim().split(/\r?\n/).filter(l=>l.trim());
+  if(lines.length<2){alert('CSV appears empty.');return;}
+  S[p].headers=split(lines[0]).map(h=>h.trim().replace(/^"|"$/g,''));
+  S[p].rawRows=lines.slice(1).map(l=>split(l).map(v=>v.trim().replace(/^"|"$/g,'')));
+  const lh=S[p].headers.map(h=>h.toLowerCase());
+  let tc,yc,idc,gc,vc;
+  if(p==='p'){tc=lh.findIndex(h=>h.includes('name'));idc=lh.findIndex(h=>h.includes('def'));gc=lh.findIndex(h=>h.includes('type'));vc=lh.findIndex(h=>h.includes('priv'));yc=-1;}
+  else if(p==='l'){tc=lh.findIndex(h=>h.includes('artist')||h.includes('name'));gc=lh.findIndex(h=>h.includes('genre'));vc=lh.findIndex(h=>h.includes('origin')||h.includes('country'));idc=lh.findIndex(h=>h.includes('mbid'));yc=-1;}
+  else{tc=lh.findIndex(h=>['title','name','movie','show','series'].some(k=>h.includes(k)));yc=lh.findIndex(h=>h.includes('year'));idc=lh.findIndex(h=>h.includes('tmdb')||h.includes('tvdb')||h==='id');gc=lh.findIndex(h=>h.includes('genre'));vc=lh.findIndex(h=>['vibe','network','type','category'].some(k=>h.includes(k)));}
+  if(tc===-1){showMapper(p);return;}
+  applyCSV(p,tc,yc,idc,gc,vc,filename);
+}
+
+function applyCSV(p,tc,yc,idc,gc,vc,filename){
+  const lh=S[p].headers.map(h=>h.toLowerCase());
+  const dc=p==='r'?lh.findIndex(h=>h.includes('director')):-1;
+  const fileId=Date.now()+'_'+Math.random().toString(36).slice(2);
+  const newItems=S[p].rawRows.filter(row=>row[tc]?.trim()).map(row=>({
+    title:row[tc]||'',name:row[tc]||'',
+    year:yc>=0?parseInt(row[yc])||null:null,
+    tmdb:idc>=0?row[idc]||null:null,
+    genre:gc>=0?row[gc]||'':'',
+    vibe:vc>=0?row[vc]||'':'',
+    director:dc>=0?row[dc]||'':'',
+    def:p==='p'&&idc>=0?row[idc]||'':'',
+    selected:true,status:'queued',_src:fileId
+  }));
+  S[p].loadedFiles.push({id:fileId,name:filename,count:newItems.length});
+  S[p].items=S[p].items.concat(newItems);
+  reindexItems(p);
+  refreshAfterLoad(p);
+}
+
+function clearData(p){
+  document.getElementById(`${p}-lbar`)?.classList.remove('on');
+  document.getElementById(`${p}-mapper`)?.classList.remove('on');
+  const fi=document.getElementById(`${p}-file`);if(fi)fi.value='';
+  S[p].headers=[];S[p].rawRows=[];S[p].items=[];S[p].loadedFiles=[];S[p].filter='All';
+  renderPills(p);
+  if(p==='p'){renderPGrid();updateStats('p');}else{buildChips(p);render(p);}
+}
+
+
+// ─────────────────────────────────────
+// DIRECTOR FILTER
+// ─────────────────────────────────────
+function dirDebounce(){
+  clearTimeout(dirTimer);
+  const q=document.getElementById('r-dir-input').value.trim();
+  if(!q){clearDirFilter();return;}
+  dirTimer=setTimeout(()=>searchDir(q),500);
+}
+
+async function searchDir(q){
+  const sel=document.getElementById('r-dir-select');
+  // First: search within loaded CSV data
+  const fromCSV=[...new Set(S.r.items.map(m=>m.director).filter(d=>d&&d.toLowerCase().includes(q.toLowerCase())))].sort();
+  // Also attempt Radarr lookup for TMDB-sourced director names
+  const fromTMDB=[];
+  const url=document.getElementById('r-url').value.trim().replace(/\/$/,'');
+  const key=document.getElementById('r-key').value.trim();
+  if(url&&key){
+    try{
+      const r=await fetch(`${url}/api/v3/movie/lookup?term=${encodeURIComponent(q)}`,{headers:{'X-Api-Key':key}});
+      if(r.ok){
+        const movies=await r.json();
+        movies.slice(0,15).forEach(m=>{
+          (m.credits?.crew||[]).filter(c=>c.job==='Director'&&c.name.toLowerCase().includes(q.toLowerCase())).forEach(c=>{if(!fromTMDB.includes(c.name))fromTMDB.push(c.name);});
+        });
+      }
+    }catch(_){}
+  }
+  const all=[...new Set([...fromCSV,...fromTMDB])].sort();
+  if(!all.length)all.push(q);
+  sel.innerHTML='<option value="">— All directors —</option>'+all.map(d=>`<option value="${d}">${d}</option>`).join('');
+}
+
+function setDirFilter(v){activeDirFilter=v||null;render('r');}
+function clearDirFilter(){
+  activeDirFilter=null;
+  document.getElementById('r-dir-input').value='';
+  document.getElementById('r-dir-select').innerHTML='<option value="">— All directors —</option>';
+  render('r');
+}
+
+// ─────────────────────────────────────
+// FILTERS / RENDER
+// ─────────────────────────────────────
+function buildChips(p){
+  const set=new Set(['All']);
+  S[p].items.forEach(m=>{if(m.genre)m.genre.split('/').forEach(g=>set.add(g.trim()));});
+  const row=document.getElementById(`${p}-chips`);if(!row)return;
+  row.innerHTML=[...set].map(g=>`<button class="chip ${g===S[p].filter?'on':''}" onclick="setFilter('${p}','${g}')">${g}</button>`).join('');
+}
+function setFilter(p,g){S[p].filter=g;buildChips(p);render(p);}
+
+function getVis(p){
+  const q=(document.getElementById(`${p}-search`)||{value:''}).value.toLowerCase();
+  return S[p].items.filter(m=>{
+    const mf=S[p].filter==='All'||(m.genre||'').toLowerCase().includes(S[p].filter.toLowerCase());
+    const ms=!q||m.title.toLowerCase().includes(q)||(m.genre||'').toLowerCase().includes(q);
+    const md=p!=='r'||!activeDirFilter||(m.director||'').toLowerCase()===activeDirFilter.toLowerCase();
+    return mf&&ms&&md;
+  });
+}
+
+function render(p){
+  const vis=getVis(p);
+  const list=document.getElementById(`${p}-list`);if(!list)return;
+  const icons={r:'🎬',s:'📺',l:'🎵'};const labels={r:'movies',s:'shows',l:'artists'};
+  const sl={queued:'queued',importing:'adding…',success:'added',exists:'exists',failed:'failed'};
+  if(!S[p].items.length){list.innerHTML=`<div class="empty">${icons[p]||'📄'}<br>Drop a CSV above to load your ${labels[p]||'items'}</div>`;updateStats(p);return;}
+  if(!vis.length){list.innerHTML='<div class="empty">No items match your filters.</div>';updateStats(p);return;}
+  list.innerHTML=vis.map(m=>`
+    <div class="trow ${m.selected?'sel':''} ${m.status!=='queued'?m.status:''}" onclick="toggleRow('${p}',${m.id})">
+      <input type="checkbox" ${m.selected?'checked':''} onclick="event.stopPropagation();toggleRow('${p}',${m.id})"/>
+      <div class="tt">${m.title}</div>
+      <div class="ty">${m.year||'—'}</div>
+      <div class="tg">${m.genre||'—'}</div>
+      <div class="tv">${p==='r'&&m.director?m.director:(m.vibe||'—')}</div>
+      <div class="badge ${m.status}"><div class="bd"></div><span>${sl[m.status]}</span></div>
+    </div>`).join('');
+  updateStats(p);
+}
+
+function toggleRow(p,id){if(S[p].importing)return;const m=S[p].items.find(x=>x.id===id);if(m){m.selected=!m.selected;render(p);}}
+function selAll(p){getVis(p).forEach(m=>m.selected=true);render(p);}
+function desAll(p){getVis(p).forEach(m=>m.selected=false);render(p);}
+function toggleAll(p){const c=document.getElementById(`${p}-sa`);getVis(p).forEach(m=>m.selected=c.checked);render(p);}
+
+function updateStats(p){
+  const ids=['nt','ns','nd','ne','nf'];
+  const vals=[S[p].items.length,S[p].items.filter(m=>m.selected).length,S[p].items.filter(m=>m.status==='success').length,S[p].items.filter(m=>m.status==='exists').length,S[p].items.filter(m=>m.status==='failed').length];
+  ids.forEach((id,i)=>{const el=document.getElementById(`${p}-${id}`);if(el)el.textContent=vals[i];});
+}
+
+// ─────────────────────────────────────
+// CONNECTION
+// ─────────────────────────────────────
+async function testConn(p){
+  const url=document.getElementById(`${p}-url`).value.trim().replace(/\/$/,'');
+  const key=document.getElementById(`${p}-key`).value.trim();
+  if(!url||!key){setStatus(p,'err','Enter both URL and API key');return;}
+  setStatus(p,'spin','Connecting…');
+  document.getElementById(`${p}-btn`).disabled=true;
+  // Prowlarr + Lidarr use /api/v1, Radarr + Sonarr use /api/v3
+  const apiVer=(p==='p'||p==='l')?'v1':'v3';
+  try{
+    const r=await fetch(`${url}/api/${apiVer}/system/status`,{headers:{'X-Api-Key':key}});
+    if(!r.ok)throw new Error(`HTTP ${r.status}`);
+    const d=await r.json();
+    if(p!=='p'){
+      // Lidarr uses v1, Radarr/Sonarr use v3
+      const av=p==='l'?'v1':'v3';
+      const qr=await fetch(`${url}/api/${av}/qualityprofile`,{headers:{'X-Api-Key':key}});
+      const qd=await qr.json();S[p].qualityId=qd[0]?.id||1;
+      const rr=await fetch(`${url}/api/${av}/rootfolder`,{headers:{'X-Api-Key':key}});
+      const rd=await rr.json();S[p].rootFolder=rd[0]?.path||'';
+      if(p==='r'){
+        const qSel=document.getElementById('r-quality');
+        qSel.innerHTML=qd.map(q=>`<option value="${q.id}">${q.name}</option>`).join('');
+        qSel.value=S.r.qualityId;
+        qSel.onchange=()=>{S.r.qualityId=parseInt(qSel.value);};
+        const rfSel=document.getElementById('r-rootfolder');
+        rfSel.innerHTML=rd.map(f=>`<option value="${f.path}">${f.path}${f.freeSpace?' ('+Math.round(f.freeSpace/1073741824)+'GB free)':''}</option>`).join('');
+        rfSel.value=S.r.rootFolder;
+        rfSel.onchange=()=>{S.r.rootFolder=rfSel.value;};
+        document.getElementById('r-profile-row').style.display='flex';
+      }
+      if(p==='l'){
+        // Lidarr uses v1 for metadata profile
+        const mr=await fetch(`${url}/api/v1/metadataprofile`,{headers:{'X-Api-Key':key}});
+        const md=await mr.json();S.l.metaId=md[0]?.id||1;
+      }
+      setStatus(p,'ok',`Connected to ${d.appName||''} v${d.version} · ${qd.length} quality profile${qd.length!==1?'s':''} · ${rd.length} root folder${rd.length!==1?'s':''}`);
+    }else{
+      // Prowlarr: fetch app profile ID (required for adding indexers)
+      try{
+        const apr=await fetch(`${url}/api/v1/appprofile`,{headers:{'X-Api-Key':key}});
+        if(apr.ok){const apd=await apr.json();S.p.appProfileId=apd[0]?.id||1;addLog('p',`App profile: "${apd[0]?.name}" (id:${S.p.appProfileId})`,'ok');}
+        else{S.p.appProfileId=1;}
+      }catch(e){S.p.appProfileId=1;}
+      setStatus(p,'ok',`Connected to Prowlarr v${d.version} · App Profile ID: ${S.p.appProfileId}`);
+    }
+    document.getElementById(`${p}-btn`).disabled=false;
+  }catch(e){setStatus(p,'err',`Connection failed: ${e.message}`);}
+}
+
+function setStatus(p,type,msg){
+  const dot=document.getElementById(`${p}-dot`),txt=document.getElementById(`${p}-st`);
+  dot.className='sdot '+(type==='spin'?'spin':type==='ok'?'ok':type==='err'?'err':'');
+  txt.textContent=msg;txt.style.color=type==='err'?'var(--err)':type==='ok'?'var(--ok)':'var(--muted)';
+}
+
+// ─────────────────────────────────────
+// LOGGING / PROGRESS
+// ─────────────────────────────────────
+function addLog(p,msg,type=''){
+  const box=document.getElementById(`${p}-log`);if(!box)return;
+  const line=document.createElement('div');line.className='ll '+type;
+  line.textContent=`[${new Date().toLocaleTimeString()}] ${msg}`;
+  box.appendChild(line);box.scrollTop=box.scrollHeight;
+}
+// Per-panel import timing state
+const importTiming={r:{start:null,interval:null},s:{start:null,interval:null},p:{start:null,interval:null},l:{start:null,interval:null}};
+
+function startImportTimer(p){
+  importTiming[p].start=Date.now();
+  if(importTiming[p].interval)clearInterval(importTiming[p].interval);
+  importTiming[p].interval=setInterval(()=>{
+    const el=document.getElementById(`${p}-ptimer`);if(el)el.textContent=liveTimerText(p);
+  },500);
+}
+function stopImportTimer(p){
+  if(importTiming[p].interval){clearInterval(importTiming[p].interval);importTiming[p].interval=null;}
+}
+function liveTimerText(p){
+  const t=importTiming[p];if(!t.start)return'';
+  const elapsed=(Date.now()-t.start)/1000;
+  const fill=document.getElementById(`${p}-pfill`);
+  const pct=fill?parseFloat(fill.style.width)||0:0;
+  if(pct<=0)return fmtSecs(elapsed)+' elapsed';
+  const total=elapsed/(pct/100);
+  const remaining=Math.max(0,total-elapsed);
+  return `~${fmtSecs(remaining)} left · ${fmtSecs(elapsed)} elapsed`;
+}
+function fmtSecs(s){
+  s=Math.round(s);
+  if(s<60)return s+'s';
+  const m=Math.floor(s/60),r=s%60;
+  return m+'m '+(r<10?'0':'')+r+'s';
+}
+function setProgress(p,done,total){
+  const pct=Math.round((done/total)*100);
+  document.getElementById(`${p}-pfill`).style.width=pct+'%';
+  document.getElementById(`${p}-ppct`).textContent=pct+'%';
+  document.getElementById(`${p}-ptxt`).textContent=`${done} / ${total}`;
+  const te=document.getElementById(`${p}-ptimer`);if(te)te.textContent=liveTimerText(p);
+}
+
+// ─────────────────────────────────────
+// LOOKUP
+// ─────────────────────────────────────
+async function lookupR(url,key,title,year){
+  // Search Radarr by title+year, return {tmdbId, title, year} of best match
+  const queries=year?[`${title} ${year}`,title]:[title];
+  for(const q of queries){
+    try{
+      const r=await fetch(`${url}/api/v3/movie/lookup?term=${encodeURIComponent(q)}`,{headers:{'X-Api-Key':key}});
+      if(!r.ok)continue;
+      const d=await r.json();
+      if(!d.length)continue;
+      // Prefer exact year match, fall back to first result
+      const match=year?d.find(m=>m.year===parseInt(year))||d[0]:d[0];
+      return{tmdbId:match.tmdbId,title:match.title,year:match.year};
+    }catch(e){}
+  }
+  return null;
+}
+async function lookupS(url,key,title,year){
+  const queries=year?[`${title} ${year}`,title]:[title];
+  for(const q of queries){
+    try{
+      const r=await fetch(`${url}/api/v3/series/lookup?term=${encodeURIComponent(q)}`,{headers:{'X-Api-Key':key}});
+      if(!r.ok)continue;
+      const d=await r.json();
+      if(!d.length)continue;
+      const match=year?d.find(s=>s.year===parseInt(year))||d[0]:d[0];
+      return{tvdbId:match.tvdbId,title:match.title,year:match.year};
+    }catch(e){}
+  }
+  return null;
+}
+async function lookupL(url,key,name){const r=await fetch(`${url}/api/v1/artist/lookup?term=${encodeURIComponent(name)}`,{headers:{'X-Api-Key':key}});if(!r.ok)return null;const d=await r.json();return d[0]||null;}
+
+// ─────────────────────────────────────
+// IMPORT
+// ─────────────────────────────────────
+async function go(p){
+  if(p==='p')return importP();
+  const url=document.getElementById(`${p}-url`).value.trim().replace(/\/$/,'');
+  const key=document.getElementById(`${p}-key`).value.trim();
+  const toImport=S[p].items.filter(m=>m.selected&&m.status==='queued');
+  if(!toImport.length){alert('Nothing to import.');return;}
+  const labels={r:'movies',s:'shows',l:'artists'};const apps={r:'Radarr',s:'Sonarr',l:'Lidarr'};
+  if(!confirm(`Add ${toImport.length} ${labels[p]} to ${apps[p]}?`))return;
+  S[p].importing=true;
+  document.getElementById(`${p}-btn`).disabled=true;
+  document.getElementById(`${p}-prog`).classList.add('on');
+  document.getElementById(`${p}-log`).classList.add('on');
+  startImportTimer(p);
+  let done=0;
+  for(const m of toImport){
+    m.status='importing';render(p);
+    try{
+      if(p==='r'){
+        // Step 1: Always search Radarr by title+year — Radarr's result is always used
+        addLog(p,`🔍 ${m.title}${m.year?' ('+m.year+')':''}…`);
+        let result=await lookupR(url,key,m.title,m.year);
+        // Step 2: If title search fails, try CSV TMDB ID as a direct lookup fallback
+        if(!result&&m.tmdb){
+          try{
+            const tr=await fetch(`${url}/api/v3/movie/lookup/tmdb?tmdbId=${parseInt(m.tmdb)}`,{headers:{'X-Api-Key':key}});
+            if(tr.ok){const td=await tr.json();if(td?.tmdbId)result={tmdbId:td.tmdbId,title:td.title,year:td.year};}
+          }catch(e){}
+        }
+        if(!result){m.status='failed';addLog(p,`✗ Not found: ${m.title}`,'er');done++;continue;}
+        // Step 3: If CSV had an ID, compare with what Radarr found — always use Radarr's
+        if(m.tmdb&&parseInt(m.tmdb)!==result.tmdbId){
+          addLog(p,`⚠ CSV ID ${m.tmdb} differs from Radarr match ${result.tmdbId} ("${result.title}") — using Radarr's`,'wn');
+        }
+        const qId=parseInt(document.getElementById('r-quality')?.value)||S.r.qualityId;
+        const rf=document.getElementById('r-rootfolder')?.value||S.r.rootFolder;
+        const body={tmdbId:result.tmdbId,title:result.title,year:result.year,qualityProfileId:qId,rootFolderPath:rf,monitored:true,addOptions:{searchForMovie:true}};
+        const res=await fetch(`${url}/api/v3/movie`,{method:'POST',headers:{'X-Api-Key':key,'Content-Type':'application/json'},body:JSON.stringify(body)});
+        await handleRes(p,m,res);
+      }else if(p==='s'){
+        // Step 1: Always search Sonarr by title+year — Sonarr's result is always used
+        addLog(p,`🔍 ${m.title}${m.year?' ('+m.year+')':''}…`);
+        let result=await lookupS(url,key,m.title,m.year);
+        // Step 2: If title search fails, try CSV TVDB ID as direct lookup fallback
+        if(!result&&m.tmdb){
+          try{
+            const tr=await fetch(`${url}/api/v3/series/lookup?term=tvdb:${parseInt(m.tmdb)}`,{headers:{'X-Api-Key':key}});
+            if(tr.ok){const td=await tr.json();if(td[0]?.tvdbId)result={tvdbId:td[0].tvdbId,title:td[0].title,year:td[0].year};}
+          }catch(e){}
+        }
+        if(!result){m.status='failed';addLog(p,`✗ Not found: ${m.title}`,'er');done++;continue;}
+        // Step 3: If CSV had an ID, compare with Sonarr's result — always use Sonarr's
+        if(m.tmdb&&parseInt(m.tmdb)!==result.tvdbId){
+          addLog(p,`⚠ CSV ID ${m.tmdb} differs from Sonarr match ${result.tvdbId} ("${result.title}") — using Sonarr's`,'wn');
+        }
+        const mon=document.getElementById('s-mon').value;const doS=document.getElementById('s-srch').value==='true';
+        const body={tvdbId:result.tvdbId,title:result.title,qualityProfileId:S.s.qualityId,rootFolderPath:S.s.rootFolder,monitored:true,monitor:mon,addOptions:{searchForMissingEpisodes:doS}};
+        const res=await fetch(`${url}/api/v3/series`,{method:'POST',headers:{'X-Api-Key':key,'Content-Type':'application/json'},body:JSON.stringify(body)});
+        await handleRes(p,m,res);
+      }else if(p==='l'){
+        let artist=null;
+        if(m.tmdb){const r2=await fetch(`${url}/api/v1/artist/lookup?term=lidarr:${m.tmdb}`,{headers:{'X-Api-Key':key}});if(r2.ok){const d=await r2.json();artist=d[0]||null;}}
+        if(!artist){addLog(p,`🔍 ${m.title}…`);artist=await lookupL(url,key,m.title);}
+        if(!artist){m.status='failed';addLog(p,`✗ Not found: ${m.title}`,'er');done++;continue;}
+        const mon=document.getElementById('l-mon').value;const doS=document.getElementById('l-srch').value==='true';
+        const body={...artist,qualityProfileId:S.l.qualityId,metadataProfileId:S.l.metaId,rootFolderPath:S.l.rootFolder,monitored:true,monitor:mon,addOptions:{searchForMissingAlbums:doS}};
+        const res=await fetch(`${url}/api/v1/artist`,{method:'POST',headers:{'X-Api-Key':key,'Content-Type':'application/json'},body:JSON.stringify(body)});
+        await handleRes(p,m,res);
+      }
+    }catch(e){m.status='failed';addLog(p,`✗ ${m.title}: ${e.message}`,'er');}
+    done++;setProgress(p,done,toImport.length);render(p);
+    await new Promise(r=>setTimeout(r,320));
+  }
+  S[p].importing=false;
+  stopImportTimer(p);
+  const finalEl=document.getElementById(`${p}-ptimer`);if(finalEl)finalEl.textContent=importTiming[p].start?'Done in '+fmtSecs((Date.now()-importTiming[p].start)/1000):'';
+  document.getElementById(`${p}-ptxt`).textContent='Complete!';
+  addLog(p,`Done — Added:${S[p].items.filter(x=>x.status==='success').length} Existed:${S[p].items.filter(x=>x.status==='exists').length} Failed:${S[p].items.filter(x=>x.status==='failed').length}`,'ok');
+  render(p);
+}
+
+async function handleRes(p,m,res){
+  if(res.status===201||res.ok){m.status='success';addLog(p,`✓ ${m.title}`,'ok');}
+  else if(res.status===400){const err=await res.json();const em=JSON.stringify(err).toLowerCase();if(em.includes('already')||em.includes('exist')){m.status='exists';addLog(p,`~ Exists: ${m.title}`,'wn');}else{m.status='failed';addLog(p,`✗ ${m.title}: ${JSON.stringify(err)}`,'er');}}
+  else{m.status='failed';addLog(p,`✗ ${m.title}: HTTP ${res.status}`,'er');}
+}
+
+async function importP(){
+  const url=document.getElementById('p-url').value.trim().replace(/\/$/,'');
+  const key=document.getElementById('p-key').value.trim();
+  const toImport=S.p.items.filter(m=>m.selected&&m.status==='queued');
+  if(!toImport.length){alert('No indexers selected.');return;}
+  if(!confirm(`Add ${toImport.length} indexers to Prowlarr?`))return;
+  S.p.importing=true;
+  document.getElementById('p-btn').disabled=true;
+  document.getElementById('p-prog').classList.add('on');
+  document.getElementById('p-log').classList.add('on');
+  startImportTimer('p');
+
+  // Step 1: Fetch all available indexer schemas from Prowlarr
+  // This gives us the exact definitionNames Prowlarr supports
+  addLog('p','🔍 Fetching available indexer definitions from Prowlarr…');
+  let schemas={};
+  try{
+    const sr=await fetch(`${url}/api/v1/indexer/schema`,{headers:{'X-Api-Key':key}});
+    if(sr.ok){
+      const sd=await sr.json();
+      // Build a lookup map: lowercase name -> {definitionName, implementation, configContract, fields}
+      sd.forEach(s=>{
+        schemas[s.definitionName?.toLowerCase()]=s;
+        // Also index by name for fuzzy matching
+        if(s.name)schemas[s.name.toLowerCase()]=s;
+      });
+      addLog('p',`✓ Found ${sd.length} indexer definitions available`,'ok');
+    }else{
+      addLog('p','⚠ Could not fetch schemas — will try direct add','wn');
+    }
+  }catch(e){
+    addLog('p',`⚠ Schema fetch failed: ${e.message} — will try direct add`,'wn');
+  }
+
+  // Step 2: Also get already-added indexers to detect duplicates
+  let existing=[];
+  try{
+    const er=await fetch(`${url}/api/v1/indexer`,{headers:{'X-Api-Key':key}});
+    if(er.ok)existing=await er.json();
+  }catch(e){}
+  const existingNames=new Set(existing.map(i=>i.name?.toLowerCase()));
+  const existingDefs=new Set(existing.map(i=>i.definitionName?.toLowerCase()));
+
+  let done=0;
+  const appProfId=S.p.appProfileId||1;
+
+  for(const m of toImport){
+    m.status='importing';renderPGrid();
+    try{
+      const defKey=(m.def||m.name||m.title||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+      const nameKey=(m.name||m.title||'').toLowerCase();
+
+      // Check if already exists
+      if(existingNames.has(nameKey)||existingDefs.has(defKey)){
+        m.status='exists';addLog('p',`~ Already in Prowlarr: ${m.name||m.title}`,'wn');
+        done++;setProgress('p',done,toImport.length);renderPGrid();
+        continue;
+      }
+
+      // Look up schema — try definitionName, aliases, then name
+      let schema=schemas[defKey]||schemas[nameKey]||null;
+      // Try aliases if defined
+      if(!schema&&m.aliases){
+        for(const alias of m.aliases){
+          schema=schemas[alias.toLowerCase()]||null;
+          if(schema)break;
+        }
+      }
+      // Try stripping spaces/special chars from the display name
+      if(!schema){
+        const stripped=nameKey.replace(/[^a-z0-9]/g,'');
+        schema=schemas[stripped]||null;
+      }
+      // Try partial match — find any schema key that contains or is contained by our key
+      if(!schema){
+        const stripped2=nameKey.replace(/[^a-z0-9]/g,'');
+        const matchKey=Object.keys(schemas).find(k=>{
+          const ks=k.replace(/[^a-z0-9]/g,'');
+          return ks===defKey||ks===stripped2||ks.includes(defKey)||defKey.includes(ks)||ks.includes(stripped2)||stripped2.includes(ks);
+        });
+        if(matchKey){schema=schemas[matchKey];addLog('p',`🔎 Fuzzy matched "${m.name||m.title}" → "${schema.definitionName}"`);}
+      }
+
+      // Log when no schema found so we can debug
+      if(!schema){
+        addLog('p',`⚠ No schema for "${m.name||m.title}" (tried: ${defKey}, ${nameKey.replace(/[^a-z0-9]/g,'')})`);}
+      const ck=cookieStore[defKey]||cookieStore[(m.def||'').toLowerCase()]||null;
+      // Get indexer metadata from our INDEXERS list
+      const idxMeta=INDEXERS.find(i=>(i.def||'').toLowerCase()===defKey||(i.name||'').toLowerCase()===nameKey)||m;
+
+      let body;
+      if(schema){
+        // Use the exact schema from Prowlarr — most reliable
+        const fields=schema.fields.map(f=>({...f})); // deep copy
+        // Inject credentials based on auth type
+        if(ck?.authType==='apikey'||idxMeta?.authType==='apikey'){
+          // API key auth — inject into matching field names
+          if(ck?.apiKey){
+            const keyField=idxMeta?.apiKeyField||'apikey';
+            const kf=fields.find(f=>f.name?.toLowerCase()===keyField.toLowerCase());
+            if(kf)kf.value=ck.apiKey; else fields.push({name:keyField,value:ck.apiKey});
+          }
+          if(ck?.apiUser&&idxMeta?.apiUserField){
+            const uf=fields.find(f=>f.name?.toLowerCase()===idxMeta.apiUserField.toLowerCase());
+            if(uf)uf.value=ck.apiUser; else fields.push({name:idxMeta.apiUserField,value:ck.apiUser});
+          }
+          if(ck?.rssKey&&idxMeta?.rssKeyField){
+            const rf=fields.find(f=>f.name?.toLowerCase()===idxMeta.rssKeyField.toLowerCase());
+            if(rf)rf.value=ck.rssKey; else fields.push({name:idxMeta.rssKeyField,value:ck.rssKey});
+          }
+        } else if(ck?.cookie){
+          // Cookie auth
+          const cf=fields.find(f=>f.name==='cookie'||f.name==='cookieHeader'||f.name==='Cookie');
+          if(cf)cf.value=ck.cookie; else fields.push({name:'cookie',value:ck.cookie});
+          if(ck?.userAgent){
+            const uf=fields.find(f=>f.name==='useragent'||f.name==='browserUserAgent');
+            if(uf)uf.value=ck.userAgent; else fields.push({name:'useragent',value:ck.userAgent});
+          }
+        }
+        // Usenet redirect flag
+        if(idxMeta?.redirect){
+          const rf=fields.find(f=>f.name==='redirect'||f.name==='Redirect');
+          if(rf)rf.value=true; else fields.push({name:'redirect',value:true});
+        }
+        body={
+          name:m.name||m.title,
+          definitionName:schema.definitionName,
+          implementation:schema.implementation,
+          configContract:schema.configContract,
+          enable:true,
+          priority:25,
+          appProfileId:appProfId,
+          tags:[],
+          fields
+        };
+      }else{
+        // No schema found — try Cardigann fallback
+        addLog('p',`⚠ No schema found for ${m.name||m.title} — trying Cardigann fallback`,'wn');
+        const def=m.def||defKey;
+        const fields=[{name:'definitionFile',value:def}];
+        if(ck?.cookie)fields.push({name:'cookie',value:ck.cookie});
+        if(ck?.userAgent)fields.push({name:'useragent',value:ck.userAgent});
+        // Add redirect for usenet fallback too
+        if(idxMeta?.redirect){fields.push({name:'redirect',value:true});}
+        body={name:m.name||m.title,definitionName:def,implementation:'Cardigann',configContract:'CardigannSettings',enable:true,priority:25,appProfileId:appProfId,tags:[],fields};
+      }
+
+      const res=await fetch(`${url}/api/v1/indexer`,{method:'POST',headers:{'X-Api-Key':key,'Content-Type':'application/json'},body:JSON.stringify(body)});
+      if(res.status===201||res.ok){
+        m.status='success';addLog('p',`✓ ${m.name||m.title}${ck?' 🍪':''}${schema?'':' (fallback)'}`, 'ok');
+      }else if(res.status===400){
+        const err=await res.json();const em=JSON.stringify(err).toLowerCase();
+        if(em.includes('already')||em.includes('exist')||em.includes('unique')){m.status='exists';addLog('p',`~ Already exists: ${m.name||m.title}`,'wn');}
+        else if(em.includes('cloudflare')||em.includes('blocked')){m.status='failed';addLog('p',`✗ ${m.name||m.title}: Blocked by CloudFlare`,'er');}
+        else if(em.includes('username')||em.includes('password')||em.includes('credentials')){m.status='failed';addLog('p',`✗ ${m.name||m.title}: Needs credentials/cookie`,'wn');}
+        else{m.status='failed';addLog('p',`✗ ${m.name||m.title}: ${JSON.stringify(err)}`,'er');}
+      }else if(res.status===500){
+        const def500=body?.definitionName||'unknown';
+        m.status='failed';addLog('p',`✗ ${m.name||m.title}: HTTP 500 (definitionName: ${def500})`,'er');
+      }else{
+        m.status='failed';addLog('p',`✗ ${m.name||m.title}: HTTP ${res.status}`,'er');
+      }
+    }catch(e){m.status='failed';addLog('p',`✗ ${m.name||m.title}: ${e.message}`,'er');}
+    done++;setProgress('p',done,toImport.length);renderPGrid();
+    await new Promise(r=>setTimeout(r,300));
+  }
+  S.p.importing=false;
+  stopImportTimer('p');
+  const finalElP=document.getElementById('p-ptimer');if(finalElP)finalElP.textContent=importTiming.p.start?'Done in '+fmtSecs((Date.now()-importTiming.p.start)/1000):'';
+  document.getElementById('p-ptxt').textContent='Complete!';
+  addLog('p',`Done — Added:${S.p.items.filter(x=>x.status==='success').length} Existed:${S.p.items.filter(x=>x.status==='exists').length} Failed:${S.p.items.filter(x=>x.status==='failed').length}`,'ok');
+  renderPGrid();
+}
+
+
+// ─────────────────────────────────────
+// AUTO DETECT
+// ─────────────────────────────────────
+
+
+// ─────────────────────────────────────
+// INIT
+// ─────────────────────────────────────
+initPGrid();
+initCookieManager();
+render('r');render('s');render('l');
+</script>
+</body>
+</html>
